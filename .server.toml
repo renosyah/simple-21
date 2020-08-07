@@ -1,0 +1,8 @@
+[app]
+name = "simple-21"
+version = "0.0.1"
+host = "localhost"
+port = 8000
+read_timeout = 5
+write_timeout = 10
+idle_timeout = 15

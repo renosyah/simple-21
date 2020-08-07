@@ -1,0 +1,68 @@
+#screen-filler {
+    position: absolute;
+    top: 0; right: 0; bottom: 0; left: 0;
+    border: 15px solid orange
+}
+
+
+#bg {
+    position: fixed;
+    background-color: #2BAE66FF;
+    background-clip: border-box;
+    background-repeat: no-repeat;
+    background-size: cover;
+    z-index: -1;
+    bottom: 0;
+    top: 0;
+    left: 0;
+    right: 0;            
+}
+
+.input-field input[type=text]:focus + label {
+    color: #2BAE66FF !important;
+}
+
+.input-field input[type=text]:focus {
+    border-bottom: 1px solid #2BAE66FF !important;
+    box-shadow: 0 1px 0 0 #2BAE66FF !important;
+}
+
+.preloader-background {
+    display: flex;
+	align-items: center;
+	justify-content: center;
+	background-color: #ffffff;
+    opacity:0.5;
+	position: fixed;
+	z-index: 100;
+	top: 0;
+	left: 0;
+	right: 0;
+	bottom: 0;	
+}
+
+.offline-warning {
+    overflow: hidden;
+    position: fixed;
+    top: 25px;
+    width: 100%;
+    font-size: 32px;
+    z-index: 10;
+}
+.bounce-enter-active {
+    animation: bounce-in .5s;
+}
+.bounce-leave-active {
+    animation: bounce-in .5s reverse;
+}
+@keyframes bounce-in {
+    0% {
+        transform: scale(0);
+    }
+    50% {
+        transform: scale(1.5);
+    }
+    100% {
+        transform: scale(1);
+    }
+}

@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width,initial-scale=1.0">
+    <title>
+       Simple-21
+    </title>
+
+    <!-- CSS  -->
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+    <link href="./css/materialize.css" type="text/css" rel="stylesheet" media="screen,projection" />
+    <link href="./css/custom.css" type="text/css" rel="stylesheet" media="screen,projection" />
+    
+</head>
+
+<body>
+    <noscript>
+      <strong>We're sorry but Simple-21 doesn't work properly without JavaScript enabled. Please enable it to continue.</strong>
+    </noscript>  
+    <div id="app"> 
+
+        <div id="bg" v-show="page_name != 'loading-page'"></div>
+        
+        <!---------OFFLINE WARNING---------->
+        <div class="offline-warning">
+            <transition name="bounce">
+                <div class="container center" v-show="!is_online" v-on:click="is_online = true">
+                    <div class="row">
+                        <div class="col s12 m2"></div>
+                        <div class="col s12 m8">
+                            <div class="chip red white-text center">
+                                <span class="white-text" v-show="localizeCheck('ind')">Perangkat Anda Sedang Offline!</span>
+                                <span class="white-text" v-show="localizeCheck('en')">Your Device is Offline!</span>
+                            </div>
+                        </div>
+                        <div class="col s12 m2"></div>
+                    </div>
+                </div>
+            </transition>
+        </div>
+
+
+        <!---------LOADING---------->
+        <div class="preloader-background" v-show="is_loading">
+            
+            <div class="valign-wrapper" style="width:100%;height:100%;position: absolute;">
+                <div class="valign" style="width:100%;">
+                    <div class="container">
+                        <div class="row">
+                            <div class="center col s12 m6 offset-m3">
+                            <div class="preloader-wrapper big active">
+                                <div class="spinner-layer spinner-green-only">
+                                    <div class="circle-clipper left">
+                                    <div class="circle"></div>
+                                    </div><div class="gap-patch">
+                                    <div class="circle"></div>
+                                    </div><div class="circle-clipper right">
+                                    <div class="circle"></div>
+                                    </div>
+                                </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+
+        <!---------SIGN IN PAGE---------->
+        <div v-show="page_name == 'login-page'">
+
+            <div class="valign-wrapper" style="width:100%;height:100%;position: absolute;">
+                <div class="valign" style="width:100%;">
+                    <div class="container">
+                       <div class="row">
+                          <div class="col s12 m6 offset-m3">
+
+                            <div class="card">
+                                <div class="card-title">
+                                    <h3 class="center green-text">
+                                        <br />
+                                        <span v-show="localizeCheck('en')">Selamat datang!</span>
+                                        <span v-show="localizeCheck('ind')">Welcome!</span>
+                                    </h3>
+                                </div>
+                                <div class="card-image">
+                                </div>
+                                <div class="card-content">
+                                    <div class="input-field">
+                                        <input id="fullname" type="text" class="validate">
+                                        <label for="fullname">
+                                            <span v-show="localizeCheck('ind')">Nama Pemain</span>
+                                            <span v-show="localizeCheck('en')">Player Name</span>
+                                        </label>
+                                    </div>
+                                </div>
+                                <div class="center card-action">
+                                    <a class="container waves-effect waves-light btn-large btn green white-text" style="text-transform:none">
+                                        <b>
+                                            <span v-show="localizeCheck('ind')">Masuk</span>
+                                            <span v-show="localizeCheck('en')">Sign</span>
+                                        </b>    
+                                    </a>
+                                </div>
+                              </div>
+
+                          </div>
+                       </div>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+        <!---------DASHBOARD PAGE---------->
+        <div v-show="page_name == 'main-page'">
+            <div class="container">
+                <div class="card-panel white">
+                    <div class="row">
+                        <div class="col s6">
+                            <ul class="collection">
+                                <li class="collection-item avatar">
+                                    <i class="material-icons circle green">account_circle</i>
+                                    <span class="title">Mr Foo Bar</span>
+                                    <p> $ 500 </p>
+                                  </li>
+                               </ul>
+                        </div>
+                        <div class="center col s3">
+                            <br />
+                            <a class="col s12 waves-effect waves-light btn-large green white-text">Create Room</a>
+                        </div>
+                        <div class="center col s3">
+                            <br />
+                            <a class="col s12 waves-effect waves-light btn-large grey white-text">Exit</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="container">
+                <div class="row">
+                    <div class="col s4">
+                        <div class="card-panel white">
+                            <h5 class="green-text">Players</h5>
+                            <ul class="collection" v-for="item in [1,2,3,4]" v-bind:key="item">
+                               <li class="collection-item avatar">
+                                   <i class="material-icons circle green">account_circle</i>
+                                   <span class="title">Player {{ item }}</span>
+                                   <p>$ 452 <br>
+                                      idle
+                                   </p>
+                                 </li>
+                              </ul>
+                          </div>
+                    </div>
+                    <div class="col s8">
+                        <div class="card-panel white">
+                            <h5 class="green-text">Rooms</h5>
+                            <ul class="collection" v-for="item in [1,2,3]" v-bind:key="item">
+                               <li class="collection-item avatar">
+                                   <i class="material-icons circle green">group</i>
+                                   <span class="title">Title {{ item }}</span>
+                                   <p>First Line <br>
+                                      Second Line
+                                   </p>
+                                   <a href="#!" class="secondary-content"><i class="material-icons">arrow_forward</i></a>
+                                 </li>
+                              </ul>
+                          </div>
+                    </div>
+                </div>
+             </div>
+        </div>
+
+    </div>
+    <!-- built files will be auto injected -->
+
+    <!--  Scripts-->
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+    <script src="./js/materialize.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+    <script src="./main.js"></script>
+</body>
+
+</html>

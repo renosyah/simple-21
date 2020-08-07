@@ -36,9 +36,9 @@ func (h *RouterHub) HandleLobby(w http.ResponseWriter, r *http.Request) {
 
 		event := model.FromJson(msg)
 		switch event.Name {
-		case model.EVENT_JOIN:
-		case model.EVENT_EXIT:
-		case model.EVENT_NOT_FOUND:
+		case model.LOBBY_EVENT_JOIN:
+		case model.LOBBY_EVENT_EXIT:
+		case model.LOBBY_EVENT_NOT_FOUND:
 		default:
 		}
 

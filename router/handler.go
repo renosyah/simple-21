@@ -3,6 +3,7 @@ package router
 import (
 	"net/http"
 	"sync"
+	"time"
 
 	"github.com/gorilla/websocket"
 	"github.com/renosyah/simple-21/model"
@@ -23,8 +24,10 @@ type (
 	}
 
 	RoomConn struct {
-		Room          model.Room
-		EventReceiver chan model.EventData
+		ConnectionMx   sync.RWMutex
+		PlayersConn    map[string]*PlayerConn
+		Room           model.Room
+		EventBroadcast chan model.EventData
 	}
 
 	RouterHub struct {
@@ -34,3 +37,28 @@ type (
 		EventBroadcast chan model.EventData
 	}
 )
+
+func NewRouterHub() *RouterHub {
+	h := &RouterHub{
+		ConnectionMx:   sync.RWMutex{},
+		PlayersConn:    make(map[string]*PlayerConn),
+		RoomsConn:      make(map[string]*RoomConn),
+		EventBroadcast: make(chan model.EventData),
+	}
+	go func() {
+		for {
+			msg := <-h.EventBroadcast
+			h.ConnectionMx.RLock()
+			for i, c := range h.PlayersConn {
+				select {
+				case c.EventReceiver <- msg:
+				case <-time.After((1 * time.Second)):
+					h.removePlayerConnection(i)
+				}
+			}
+			h.ConnectionMx.RUnlock()
+		}
+
+	}()
+	return h
+}

@@ -117,62 +117,65 @@
         </div>
         <!---------DASHBOARD PAGE---------->
         <div v-show="page_name == 'main-page'">
+
             <div class="container">
-                <div class="card-panel white">
-                    <div class="row">
-                        <div class="col s6">
+                <div class="row">
+                    <div class="col s12 m12 l12"> 
+                        <div class="card-panel white">                     
                             <ul class="collection">
                                 <li class="collection-item avatar">
                                     <i class="material-icons circle green">account_circle</i>
                                     <span class="title">Mr Foo Bar</span>
                                     <p> $ 500 </p>
-                                  </li>
-                               </ul>
+                                </li>
+                            </ul>
+                            <div class="row">
+                                <div class="center col s6 s6 l6">
+                                    <br />
+                                    <a class="col s12 waves-effect waves-light btn-large green white-text">Create Room</a>
+                                    
+                                </div>
+                                <div class="center col s6 s6 l6">
+                                    <br />
+                                    <a class="col s12 waves-effect waves-light btn-large grey white-text">Exit</a>
+                                    
+                                </div> 
+                            </div> 
+                        </div>                        
+                    </div>
+                </div>        
+                <div class="row">
+                    <div class="col s12 m6 l4">
+                        <div class="card-panel white">
+                            <h5 class="green-text">Players</h5>
+                            <ul class="collection" v-for="item in [1,2,3,4]" v-bind:key="item">
+                                <li class="collection-item avatar">
+                                    <i class="material-icons circle green">account_circle</i>
+                                    <span class="title">Player {{ item }}</span>
+                                    <p>$ 452 <br>
+                                        idle
+                                    </p>
+                                </li>
+                            </ul>
                         </div>
-                        <div class="center col s3">
-                            <br />
-                            <a class="col s12 waves-effect waves-light btn-large green white-text">Create Room</a>
-                        </div>
-                        <div class="center col s3">
-                            <br />
-                            <a class="col s12 waves-effect waves-light btn-large grey white-text">Exit</a>
+                    </div>
+                    <div class="col s12 m6 l8">
+                        <div class="card-panel white">
+                            <h5 class="green-text">Rooms</h5>
+                            <ul class="collection" v-for="item in [1,2,3]" v-bind:key="item">
+                                <li class="collection-item avatar">
+                                    <i class="material-icons circle green">group</i>
+                                    <span class="title">Room {{ item }}</span>
+                                    <p>4/4 Player <br>
+                                        On Going
+                                    </p>
+                                    <a href="#!" class="secondary-content"><i class="material-icons">arrow_forward</i></a>
+                                </li>
+                            </ul>
                         </div>
                     </div>
                 </div>
             </div>
-            <div class="container">
-                <div class="row">
-                    <div class="col s4">
-                        <div class="card-panel white">
-                            <h5 class="green-text">Players</h5>
-                            <ul class="collection" v-for="item in [1,2,3,4]" v-bind:key="item">
-                               <li class="collection-item avatar">
-                                   <i class="material-icons circle green">account_circle</i>
-                                   <span class="title">Player {{ item }}</span>
-                                   <p>$ 452 <br>
-                                      idle
-                                   </p>
-                                 </li>
-                              </ul>
-                          </div>
-                    </div>
-                    <div class="col s8">
-                        <div class="card-panel white">
-                            <h5 class="green-text">Rooms</h5>
-                            <ul class="collection" v-for="item in [1,2,3]" v-bind:key="item">
-                               <li class="collection-item avatar">
-                                   <i class="material-icons circle green">group</i>
-                                   <span class="title">Title {{ item }}</span>
-                                   <p>First Line <br>
-                                      Second Line
-                                   </p>
-                                   <a href="#!" class="secondary-content"><i class="material-icons">arrow_forward</i></a>
-                                 </li>
-                              </ul>
-                          </div>
-                    </div>
-                </div>
-             </div>
         </div>
 
     </div>

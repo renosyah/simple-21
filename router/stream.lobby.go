@@ -2,8 +2,6 @@ package router
 
 import (
 	"context"
-	"sync"
-	"time"
 
 	"github.com/gorilla/websocket"
 	"github.com/renosyah/simple-21/model"
@@ -44,29 +42,4 @@ func (h *RouterHub) receiveBroadcastsEvent(ctx context.Context, wsconn *websocke
 		}
 	}
 
-}
-
-func NewRouterHub() *RouterHub {
-	h := &RouterHub{
-		ConnectionMx:   sync.RWMutex{},
-		PlayersConn:    make(map[string]*PlayerConn),
-		RoomsConn:      make(map[string]*RoomConn),
-		EventBroadcast: make(chan model.EventData),
-	}
-	go func() {
-		for {
-			msg := <-h.EventBroadcast
-			h.ConnectionMx.RLock()
-			for i, c := range h.PlayersConn {
-				select {
-				case c.EventReceiver <- msg:
-				case <-time.After((1 * time.Second)):
-					h.removePlayerConnection(i)
-				}
-			}
-			h.ConnectionMx.RUnlock()
-		}
-
-	}()
-	return h
 }

@@ -1,24 +1,13 @@
 new Vue({
     el: '#app',
     data() {
-        return {          
-            page_name : "main-page",
+        return {
             is_online : true,
             is_loading : false,
             host : {
                 name : "",
                 protocol : "",
                 port : ""
-            },
-            localize : {
-                choosed : "ind",
-                list : [{
-                    label :"Indonesia" ,
-                    value :"ind" 
-                },{
-                    label :"English" ,
-                    value :"en" 
-                }]
             }
         }
     },
@@ -36,19 +25,38 @@ new Vue({
     computed : {
         baseUrl(){
             return this.host.protocol.concat(this.host.name + ":" + this.host.port + "/")
-        }
+        },
+        getPageName(){
+            let param = new URLSearchParams(window.location.search)
+            let name = param.get('page')
+            return name ? name : "login-page"
+        },
     },
     methods : {
         switchPage(name){
-            this.page_name = name
+            if ('URLSearchParams' in window) {
+                var searchParams = new URLSearchParams(window.location.search);
+                searchParams.set('page', name);
+                window.location.search = searchParams.toString();
+            }
+        },
+        switchLocalize(lang){
+            if ('URLSearchParams' in window) {
+                var searchParams = new URLSearchParams(window.location.search);
+                searchParams.set('loc', name);
+                window.location.search = searchParams.toString();
+            }
+        },
+        localizeCheck(lang){
+            let def = "ind"
+            let param = new URLSearchParams(window.location.search)
+            let name = param.get('loc')
+            return name ? (name == lang) : (def == lang)
         },
         backPress(){
             if (event.state && event.state.noBackExitsApp) {
                 window.history.pushState({ noBackExitsApp: true }, '')
             }
-        },
-        localizeCheck(lang){ 
-            return this.localize.choosed == lang 
         },
         setCurrentHost(){
             this.host.name = window.location.hostname

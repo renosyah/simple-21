@@ -33,7 +33,7 @@ var rootCmd = &cobra.Command{
 		r := mux.NewRouter()
 
 		r.HandleFunc("/wslobby", routerHub.HandleLobby)
-		r.PathPrefix("/").Handler(http.FileServer(http.Dir("./files/")))
+		r.PathPrefix("/").Handler(routerHub.HandleIndex(http.FileServer(http.Dir("./files/"))))
 
 		r.NotFoundHandler = r.NewRoute().HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			http.Redirect(w, r, "/", http.StatusSeeOther)

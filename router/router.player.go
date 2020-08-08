@@ -22,11 +22,9 @@ func (h *RouterHub) HandleAddPlayer(w http.ResponseWriter, r *http.Request) {
 	defer h.ConnectionMx.Unlock()
 
 	param.ID = fmt.Sprint(uuid.NewV4())
-	h.Players[param.ID] = &model.Player{
-		ID:    param.ID,
-		Name:  param.Name,
-		Money: 500,
-	}
+	param.Money = 500
+
+	h.Players[param.ID] = &param
 
 	h.Lobbies.EventBroadcast <- model.EventData{
 		Name: model.LOBBY_EVENT_ON_JOIN,
@@ -34,6 +32,16 @@ func (h *RouterHub) HandleAddPlayer(w http.ResponseWriter, r *http.Request) {
 	}
 
 	api.HttpResponse(w, r, param, http.StatusOK)
+}
+
+func (h *RouterHub) HandleListPlayer(w http.ResponseWriter, r *http.Request) {
+	players := []model.Player{}
+
+	for _, p := range h.Players {
+		players = append(players, *p)
+	}
+
+	api.HttpResponse(w, r, players, http.StatusOK)
 }
 
 func (h *RouterHub) HandleDetailPlayer(w http.ResponseWriter, r *http.Request) {

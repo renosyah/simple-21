@@ -23,6 +23,7 @@ func (h *RouterHub) openRoom(pHostID string, player []model.RoomPlayer) {
 	room := model.Room{
 		ID:           fmt.Sprint(uuid.NewV4()),
 		PlayerTurnID: pHostID,
+		OwnerID:      pHostID,
 		RoomPlayers:  player,
 		Cards:        model.NewCards(),
 	}

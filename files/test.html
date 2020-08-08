@@ -27,7 +27,7 @@
             <div class="valign" style="width:100%;">
                 <div class="container">
                    <div class="row">
-                      <div class="col s12 m6 offset-m3">
+                      <div class="col s12 m12 l12">
 
                         <div class="card">
                             <div class="card-title">
@@ -39,29 +39,17 @@
                             <div class="card-image">
                             </div>
                             <div class="card-content">
+                                <p class="center" v-show="messages.length == 0"> - no message - </p>
                                 <ul class="collection" v-for="(message,index) in messages" v-bind:key="index">
                                     <li class="collection-item avatar">
                                         <i class="material-icons circle green">account_circle</i>
                                         <span class="title">{{ message }}</span>
-                                      </li>
-                                   </ul>
-
-                                <div class="input-field">
-                                    <input id="simple-text" type="text" class="validate" v-model="message.data">
-                                    <label for="simple-text">
-                                        Message
-                                    </label>
-                                </div>
+                                    </li>
+                                </ul>
                             </div>
                             <div class="center card-action">
-                                <a class="container waves-effect waves-light btn-large btn green white-text" style="text-transform:none" @click="reJoin">
-                                    <b>
-                                        ReJoin
-                                    </b>    
-                                </a>
                             </div>
                           </div>
-
                       </div>
                    </div>
                 </div>
@@ -120,7 +108,7 @@
                 window.addEventListener('popstate', this.backPress )
                 this.setCurrentHost()
 
-                this.ws = new WebSocket("ws://" + this.host.name + ":" + this.host.port + "/wslobby")
+                this.ws = new WebSocket("ws://" + this.host.name + ":" + this.host.port + "/ws-lobby")
                 this.ws.onmessage = this.wsOnmessage
                 this.ws.onopen = this.wsOpen
                 this.ws.onclose = this.onclose
@@ -177,13 +165,16 @@
                 baseUrl(){
                     return this.host.protocol.concat(this.host.name + ":" + this.host.port + "/")
                 },
-                reJoin(){
+                wsOpen(){
+
+                    if (!this.player.id){
+                        return
+                    }
+
                     this.ws.send(JSON.stringify({
                         name : "LOBBY_EVENT_PLAYER_REJOIN",
                         data : this.player,
                     }))
-                },
-                wsOpen(){
 
                 },
                 wsClose(){

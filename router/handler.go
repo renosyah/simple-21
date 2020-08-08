@@ -67,6 +67,7 @@ func NewRouterHub() *RouterHub {
 		ConnectionMx: sync.RWMutex{},
 		Lobbies:      lobHub,
 		Players:      make(map[string]*model.Player),
+		Rooms:        make(map[string]*RoomsHub),
 	}
 
 	return h

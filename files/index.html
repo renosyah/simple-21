@@ -76,7 +76,7 @@
                 <div class="valign" style="width:100%;">
                     <div class="container">
                        <div class="row">
-                          <div class="col s12 m6 offset-m3">
+                          <div class="col s12 m8 l6 offset-m2 offset-l3">
 
                             <div class="card">
                                 <div class="card-title">
@@ -98,7 +98,7 @@
                                     </div>
                                 </div>
                                 <div class="center card-action">
-                                    <a class="waves-effect waves-light btn-large btn green white-text" style="text-transform:none;width: 100%;" @click="register(player.name)">
+                                    <a class="waves-effect waves-light btn-large btn green white-text" style="text-transform:none;width: 100%;" @click="addPlayer">
                                         <b>
                                             <span v-show="localizeCheck('ind')">Masuk</span>
                                             <span v-show="localizeCheck('en')">Enter</span>
@@ -154,15 +154,19 @@
                                 <span v-show="localizeCheck('ind')">Pemain</span>
                                 <span v-show="localizeCheck('en')">Players</span>
                             </h5>
-                            <ul class="collection" v-for="item in [1,2,3,4]" v-bind:key="item">
+                            <p v-show="players.length <= 1">-                                         
+                                <span v-show="localizeCheck('ind')">Tidak Ada Pemain</span>
+                                <span v-show="localizeCheck('en')">No Player Online</span> 
+                            -</p>
+                            <ul class="collection" v-for="p in players" v-bind:key="p.id" v-show="p.id != player.id">
                                 <li class="collection-item avatar">
                                     <i class="material-icons circle green">account_circle</i>
                                     <span class="title">
                                         <span v-show="localizeCheck('ind')">Pemain</span>
                                         <span v-show="localizeCheck('en')">Player</span>
-                                        {{ item }}
+                                        {{ p.name }}
                                     </span>
-                                    <p>$ 452 <br>
+                                    <p>$ {{ p.money }} <br>
                                     </p>
                                 </li>
                             </ul>
@@ -174,15 +178,18 @@
                                 <span v-show="localizeCheck('ind')">Ruang Bermain</span>
                                 <span v-show="localizeCheck('en')">Rooms</span>
                             </h5>
-                            <ul class="collection" v-for="item in [1,2,3]" v-bind:key="item">
+                            <p v-show="rooms.length == 0">-                                         
+                                <span v-show="localizeCheck('ind')">Tidak Ada Ruangan</span>
+                                <span v-show="localizeCheck('en')">No Room</span> 
+                            -</p>
+                            <ul class="collection" v-for="(r,i) in rooms" v-bind:key="r.id">
                                 <li class="collection-item avatar">
                                     <i class="material-icons circle green">group</i>
                                     <span class="title">
                                         <span v-show="localizeCheck('ind')">Ruangan</span>
                                         <span v-show="localizeCheck('en')">Room</span>
-                                        {{ item }}</span>
-                                    <p>4/4<br>
-                                    </p>
+                                    {{ i + 1 }}</span>
+                                    <p> </p>
                                     <a href="#!" class="secondary-content"><i class="material-icons">arrow_forward</i></a>
                                 </li>
                             </ul>
@@ -200,7 +207,169 @@
     <script src="./js/materialize.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
-    <script src="./main.js"></script>
+    <script>
+
+    new Vue({
+        el: '#app',
+        data() {
+            return {
+                players : [],
+                player : {
+                    id : "",
+                    name : "",
+                    money : 0
+                },
+                rooms : [],
+                room : {
+                    id:"",
+                    owner :"",
+                    player_turn_id : "",
+                    room_players : [],
+                },
+                is_online : true,
+                is_loading : false,
+                host : {
+                    name : "",
+                    protocol : "",
+                    port : ""
+                }
+            }
+        },
+        created(){
+            window.addEventListener('offline', () => { this.is_online = false })
+            window.addEventListener('online', () => { this.is_online = true })
+            window.history.pushState({ noBackExitsApp: true }, '')
+            window.addEventListener('popstate', this.backPress )
+            this.setCurrentHost()
+        },
+        mounted () {
+            window.$('.dropdown-trigger').dropdown()
+            window.$('.modal').modal()
+            this.initPlayer()
+            this.initPlayers()
+            this.initRooms()
+        },
+        computed : {
+            getPageName(){
+                let param = new URLSearchParams(window.location.search)
+                let name = param.get('page')
+                return name ? name : "login-page"
+            },
+        },
+        methods : {
+            addPlayer(){
+                this.is_loading = true
+                axios.post(this.baseUrl() + "addplayer", JSON.stringify(this.player))
+                    .then(response => {
+                        this.is_loading = false
+                        this.player = response.data.result
+                        if ('URLSearchParams' in window) {
+                            var searchParams = new URLSearchParams(window.location.search);
+                            searchParams.set('page','main-page');
+                            searchParams.set('player-id',this.player.id);
+                            window.location.search = searchParams.toString();
+                        }
+                    })
+                    .catch(e => {
+                        console.log(e)
+                        this.is_loading = false
+                    })
+            },
+            initPlayer(){
+                let param = new URLSearchParams(window.location.search)
+                if (!param.get('player-id')){
+                    return
+                }
+                this.is_loading = true
+                axios.post(this.baseUrl() + "player", JSON.stringify({id : param.get('player-id')}))
+                    .then(response => {
+                        this.is_loading = false
+                        if (response.data.status == 404) {
+                            window.location = this.baseUrl()
+                            return
+                        }
+                        this.player = response.data.result
+                    })
+                    .catch(e => {
+                        console.log(e)
+                        this.is_loading = false
+                    })
+            },
+            initPlayers(){
+                this.is_loading = true
+                axios.get(this.baseUrl() + "players")
+                    .then(response => {
+                        this.is_loading = false
+                        this.players = response.data.result
+                    })
+                    .catch(e => {
+                        console.log(e)
+                        this.is_loading = false
+                    })
+            },
+            exit(){
+                this.is_loading = true
+                axios.post(this.baseUrl() + "delplayer", JSON.stringify(this.player))
+                    .then(response => {
+                        this.is_loading = false
+                        this.player = response.data.result
+                        window.location = this.baseUrl()
+                    })
+                    .catch(e => {
+                        console.log(e)
+                        this.is_loading = false
+                    })
+            },
+            initRooms(){
+                this.is_loading = true
+                axios.get(this.baseUrl() + "rooms")
+                    .then(response => {
+                        this.is_loading = false
+                        this.rooms = response.data.result
+                    })
+                    .catch(e => {
+                        console.log(e)
+                        this.is_loading = false
+                    })
+            },
+            switchPage(name){
+                if ('URLSearchParams' in window) {
+                    var searchParams = new URLSearchParams(window.location.search);
+                    searchParams.set('page', name);
+                    window.location.search = searchParams.toString();
+                }
+            },
+            switchLocalize(lang){
+                if ('URLSearchParams' in window) {
+                    var searchParams = new URLSearchParams(window.location.search);
+                    searchParams.set('loc', name);
+                    window.location.search = searchParams.toString();
+                }
+            },
+            localizeCheck(lang){
+                let def = "ind"
+                let param = new URLSearchParams(window.location.search)
+                let name = param.get('loc')
+                return name ? (name == lang) : (def == lang)
+            },
+            backPress(){
+                if (event.state && event.state.noBackExitsApp) {
+                    window.history.pushState({ noBackExitsApp: true }, '')
+                }
+            },
+            setCurrentHost(){
+                this.host.name = window.location.hostname
+                this.host.port = location.port
+                this.host.protocol = location.protocol.concat("//")
+            },
+            baseUrl(){
+                return this.host.protocol.concat(this.host.name + ":" + this.host.port + "/")
+            },
+        }
+    })
+
+
+    </script>
 </body>
 
 </html>

@@ -19,11 +19,16 @@ func (h *RouterHub) HandleAddPlayer(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	if len(h.Players) >= h.Config.MaxPlayer {
+		api.HttpResponseException(w, r, http.StatusInsufficientStorage)
+		return
+	}
+
 	h.ConnectionMx.Lock()
 	defer h.ConnectionMx.Unlock()
 
 	param.ID = fmt.Sprint(uuid.NewV4())
-	param.Money = 500
+	param.Money = h.Config.StarterMoney
 	param.IsOnline = true
 
 	h.Players[param.ID] = &param

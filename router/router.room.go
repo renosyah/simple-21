@@ -17,6 +17,11 @@ func (h *RouterHub) HandleAddRoom(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	if len(h.Rooms) >= h.Config.MaxRoom {
+		api.HttpResponseException(w, r, http.StatusInsufficientStorage)
+		return
+	}
+
 	h.ConnectionMx.Lock()
 	defer h.ConnectionMx.Unlock()
 

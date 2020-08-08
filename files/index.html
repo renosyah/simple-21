@@ -149,13 +149,13 @@
                 <div class="row">
                     <div class="col s12 m6 l4">
                         <div class="card-panel white">
-                            <h5 class="green-text">
-                                <span v-show="localizeCheck('ind')">Pemain</span>
-                                <span v-show="localizeCheck('en')">Players</span>
-                            </h5>
+                            <h6 class="green-text">
+                                <span v-show="localizeCheck('ind')">Pemain ({{ players.length }})</span>
+                                <span v-show="localizeCheck('en')">Players ({{ players.length }})</span>
+                            </h6>
                             <p v-show="players.length <= 1">-                                         
-                                <span v-show="localizeCheck('ind')">Tidak Ada Pemain</span>
-                                <span v-show="localizeCheck('en')">No Player Online</span> 
+                                <span v-show="localizeCheck('ind')">Tidak Ada Pemain Lain</span>
+                                <span v-show="localizeCheck('en')">No Other Player Online</span> 
                             -</p>
                             <ul class="collection" v-for="p in players" v-bind:key="p.id" v-show="p.id != player.id">
                                 <li class="collection-item avatar">
@@ -165,17 +165,17 @@
                                     </span>
                                     <p>$ {{ p.money }} <br>
                                     </p>
-                                    <a href="#!" class="secondary-content"><i :class="{'material-icons':true,'red-text':!p.is_online,'green-text':p.is_online}">{{ p.is_online ? "link" : "link_off" }}</i></a>
+                                    <a class="secondary-content"><i :class="{'material-icons':true,'red-text':!p.is_online,'green-text':p.is_online}">{{ p.is_online ? "link" : "link_off" }}</i></a>
                                 </li>
                             </ul>
                         </div>
                     </div>
                     <div class="col s12 m6 l8">
                         <div class="card-panel white">
-                            <h5 class="green-text">
-                                <span v-show="localizeCheck('ind')">Ruang Bermain</span>
-                                <span v-show="localizeCheck('en')">Rooms</span>
-                            </h5>
+                            <h6 class="green-text">
+                                <span v-show="localizeCheck('ind')">Ruang Bermain ({{ rooms.length }})</span>
+                                <span v-show="localizeCheck('en')">Rooms ({{ rooms.length }})</span>
+                            </h6>
                             <p v-show="rooms.length == 0">-                                         
                                 <span v-show="localizeCheck('ind')">Tidak Ada Ruangan</span>
                                 <span v-show="localizeCheck('en')">No Room</span> 
@@ -186,9 +186,9 @@
                                     <span class="title">
                                         <span v-show="localizeCheck('ind')">Ruangan</span>
                                         <span v-show="localizeCheck('en')">Room</span>
-                                    {{ i + 1 }}</span>
+                                    {{ r.name }}</span>
                                     <p> </p>
-                                    <a href="#!" class="secondary-content"><i class="material-icons">arrow_forward</i></a>
+                                    <a class="secondary-content"><i class="material-icons">arrow_forward</i></a>
                                 </li>
                             </ul>
                         </div>
@@ -230,11 +230,9 @@
                 room : {
                     id:"",
                     name : "",
-                    player_turn_id : "",
-                    room_players : [],
+                    players : [],
                 },
                 lobby_ws : null,
-                room_ws : null,
                 is_online : true,
                 is_loading : false,
                 host : {
@@ -270,6 +268,10 @@
                 axios.post(this.baseUrl() + "addplayer", JSON.stringify(this.player))
                     .then(response => {
                         this.is_loading = false
+                        if (response.data.status == 507) {
+                            window.M.toast({html: '<b>Server is Full!</b>', classes: 'white green-text'})
+                            return
+                        }
                         this.player = response.data.result
                         if ('URLSearchParams' in window) {
                             var searchParams = new URLSearchParams(window.location.search);

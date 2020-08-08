@@ -15,6 +15,7 @@ import (
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 
+	"github.com/renosyah/simple-21/model"
 	"github.com/renosyah/simple-21/router"
 )
 
@@ -105,7 +106,11 @@ func init() {
 }
 
 func initRouterHub() {
-	routerHub = router.NewRouterHub()
+	routerHub = router.NewRouterHub(model.GameConfig{
+		MaxPlayer:    viper.GetInt("game.player"),
+		MaxRoom:      viper.GetInt("game.room"),
+		StarterMoney: viper.GetInt("game.money"),
+	})
 }
 
 func initConfig() {

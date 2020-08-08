@@ -79,7 +79,8 @@ func (h *RouterHub) createRoomHub(room model.Room) *RoomsHub {
 	r := &RoomsHub{
 		ConnectionMx: sync.RWMutex{},
 		Room:         room,
-		PlayerTurnID: "",
+		TurnPost:     0,
+		TurnsOrder:   []string{},
 		Dealer: &model.RoomPlayer{
 			ID:   fmt.Sprint(uuid.NewV4()),
 			Name: fmt.Sprintf("Dealer %s", room.Name),
@@ -90,14 +91,9 @@ func (h *RouterHub) createRoomHub(room model.Room) *RoomsHub {
 		EventBroadcast:  make(chan model.RoomEventData),
 	}
 
-	for i, p := range room.Players {
-		r.RoomPlayers[p.ID] = &model.RoomPlayer{
-			ID:   p.ID,
-			Name: p.Name,
-		}
-		if i == 0 {
-			r.PlayerTurnID = p.ID
-		}
+	for _, p := range room.Players {
+		r.RoomPlayers[p.ID] = &model.RoomPlayer{ID: p.ID, Name: p.Name}
+		r.TurnsOrder = append(r.TurnsOrder, p.ID)
 	}
 
 	cards := model.NewCards()

@@ -6,3 +6,8 @@ port = 8000
 read_timeout = 5
 write_timeout = 10
 idle_timeout = 15
+
+[game]
+player = 10
+room = 5
+money = 500

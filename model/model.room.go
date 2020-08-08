@@ -6,7 +6,6 @@ type (
 		OwnerID string   `json:"-"`
 		Name    string   `json:"name"`
 		Players []Player `json:"players"`
-		Round   int      `json:"round"`
 	}
 	AddRoom struct {
 		HostID  string   `json:"host_id"`

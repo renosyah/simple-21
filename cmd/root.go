@@ -32,6 +32,9 @@ var rootCmd = &cobra.Command{
 
 		r := mux.NewRouter()
 
+		r.HandleFunc("/register", routerHub.HandleAddPlayer)
+		r.HandleFunc("/logout", routerHub.HandleRemovePlayer)
+
 		r.HandleFunc("/wslobby", routerHub.HandleLobby)
 		r.PathPrefix("/").Handler(routerHub.HandleIndex(http.FileServer(http.Dir("./files/"))))
 

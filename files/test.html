@@ -54,7 +54,7 @@
                                 </div>
                             </div>
                             <div class="center card-action">
-                                <a class="container waves-effect waves-light btn-large btn green white-text" style="text-transform:none" @click="wsSend">
+                                <a class="container waves-effect waves-light btn-large btn green white-text" style="text-transform:none" @click="registerPlayer(message.data)">
                                     <b>
                                         Send
                                     </b>    
@@ -115,19 +115,14 @@
                 window.addEventListener('popstate', this.backPress )
                 this.setCurrentHost()
 
-                this.ws = new WebSocket("ws://" + this.host.name + ":" + this.host.port + "/wslobby")
-                this.ws.onmessage = this.wsOnmessage
-                this.ws.onopen = this.wsOpen
-                this.ws.onclose = this.onclose
+                // this.ws = new WebSocket("ws://" + this.host.name + ":" + this.host.port + "/wslobby")
+                // this.ws.onmessage = this.wsOnmessage
+                // this.ws.onopen = this.wsOpen
+                // this.ws.onclose = this.onclose
             },
             mounted () {
                 window.$('.dropdown-trigger').dropdown()
                 window.$('.modal').modal()
-            },
-            computed : {
-                baseUrl(){
-                    return this.host.protocol.concat(this.host.name + ":" + this.host.port + "/")
-                }
             },
             methods : {
                 switchPage(name){
@@ -145,6 +140,19 @@
                     this.host.name = window.location.hostname
                     this.host.port = location.port
                     this.host.protocol = location.protocol.concat("//")
+                },
+                baseUrl(){
+                    return this.host.protocol.concat(this.host.name + ":" + this.host.port + "/")
+                },
+                registerPlayer(nm){
+                    axios.post(this.baseUrl() + "register", JSON.stringify({name : nm}))
+                        .then(response => {
+                            console.log(response)
+                        })
+                        .catch(e => {
+                            console.log(e)
+                        })
+                    
                 },
                 wsOpen(){
 

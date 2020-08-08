@@ -10,27 +10,55 @@ import (
 	uuid "github.com/satori/go.uuid"
 )
 
-func (h *RoomConn) addPlayerRoomConnection(playerConn *PlayerConn) (stream chan model.EventData) {
+const (
+	ROOM_STATUS_USE     = 0
+	ROOM_STATUS_NOT_USE = 1
+)
+
+func (h *RouterHub) openRoom(pHostID string, player []model.RoomPlayer) {
 	h.ConnectionMx.Lock()
 	defer h.ConnectionMx.Unlock()
 
-	stream = make(chan model.EventData)
-	h.PlayersConn[playerConn.Player.ID] = playerConn
-	h.PlayersConn[playerConn.Player.ID].EventReceiver = stream
+	room := model.Room{
+		ID:           fmt.Sprint(uuid.NewV4()),
+		PlayerTurnID: pHostID,
+		RoomPlayers:  player,
+		Cards:        model.NewCards(),
+	}
+
+	h.RoomsConn[room.ID] = h.createRoomHub(room)
+}
+
+func (h *RouterHub) closeRoom(roomID string) {
+	h.ConnectionMx.Lock()
+	defer h.ConnectionMx.Unlock()
+	if _, ok := h.RoomsConn[roomID]; ok {
+		close(h.RoomsConn[roomID].EventBroadcast)
+		delete(h.RoomsConn, roomID)
+	}
+}
+
+func (h *RoomConn) addPlayerRoomConnection(p *RoomPlayerConn) (stream chan model.RoomEventData) {
+	h.ConnectionMx.Lock()
+	defer h.ConnectionMx.Unlock()
+
+	stream = make(chan model.RoomEventData)
+	h.RoomPlayersConn[p.RoomPlayer.ID] = p
+	h.RoomPlayersConn[p.RoomPlayer.ID].EventReceiver = stream
 
 	return
 }
 
-func (h *RoomConn) removePlayerRoomConnection(playerConn *PlayerConn) {
+func (h *RoomConn) removePlayerRoomConnection(p *RoomPlayerConn) {
 	h.ConnectionMx.Lock()
 	defer h.ConnectionMx.Unlock()
-	if _, ok := h.PlayersConn[playerConn.Player.ID]; ok {
-		close(h.PlayersConn[playerConn.Player.ID].EventReceiver)
-		delete(h.PlayersConn, playerConn.Player.ID)
+	if _, ok := h.RoomPlayersConn[p.RoomPlayer.ID]; ok {
+		close(h.RoomPlayersConn[p.RoomPlayer.ID].EventReceiver)
+		delete(h.RoomPlayersConn, p.RoomPlayer.ID)
 	}
 }
 
-func (h *RoomConn) receiveBroadcastsEvent(ctx context.Context, wsconn *websocket.Conn, player *PlayerConn) {
+func (h *RoomConn) receiveBroadcastsEvent(ctx context.Context, wsconn *websocket.Conn, player *RoomPlayerConn) {
 	streamClient := h.addPlayerRoomConnection(player)
 	defer h.removePlayerRoomConnection(player)
 
@@ -46,31 +74,40 @@ func (h *RoomConn) receiveBroadcastsEvent(ctx context.Context, wsconn *websocket
 	}
 }
 
-func (h *RouterHub) CreateRoom(pHostID string, players []model.PlayerRoom) *RoomConn {
+func (h *RouterHub) createRoomHub(room model.Room) *RoomConn {
 	r := &RoomConn{
-		Room: model.Room{
-			ID:           fmt.Sprint(uuid.NewV4()),
-			PlayerTurnID: pHostID,
-			Players:      players,
-			Cards:        model.NewCards(),
-		},
-		PlayersConn:    make(map[string]*PlayerConn),
-		EventBroadcast: make(chan model.EventData),
+		Room:            room,
+		RoomPlayersConn: make(map[string]*RoomPlayerConn),
+		EventBroadcast:  make(chan model.RoomEventData),
 	}
 	go func() {
 		for {
-			msg := <-r.EventBroadcast
-			r.ConnectionMx.RLock()
-			for _, c := range r.PlayersConn {
-				select {
-				case c.EventReceiver <- msg:
-				case <-time.After((1 * time.Second)):
-					r.removePlayerRoomConnection(c)
-				}
-			}
-			r.ConnectionMx.RUnlock()
-		}
+			select {
+			case msg := <-r.EventBroadcast:
+				switch msg.Status {
+				case ROOM_STATUS_USE:
 
+					r.ConnectionMx.RLock()
+					for _, c := range r.RoomPlayersConn {
+						select {
+						case c.EventReceiver <- msg:
+
+						case <-time.After((1 * time.Second)):
+							r.removePlayerRoomConnection(c)
+						}
+					}
+					r.ConnectionMx.RUnlock()
+
+				case ROOM_STATUS_NOT_USE:
+
+					h.closeRoom(room.ID)
+					return
+
+				default:
+				}
+			default:
+			}
+		}
 	}()
 	return r
 }

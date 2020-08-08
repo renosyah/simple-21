@@ -15,10 +15,8 @@ type (
 	}
 )
 
-func FromJson(b []byte) EventData {
-	var e EventData
+func (e *EventData) FromJson(b []byte) {
 	if err := json.Unmarshal(b, &e); err != nil {
-		return EventData{}
+		e = &EventData{}
 	}
-	return e
 }

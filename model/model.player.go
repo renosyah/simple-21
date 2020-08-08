@@ -10,10 +10,8 @@ type (
 	}
 )
 
-func PlayerFromJson(b []byte) Player {
-	var e Player
-	if err := json.Unmarshal(b, &e); err != nil {
-		return Player{}
+func (p *Player) FromJson(b []byte) {
+	if err := json.Unmarshal(b, &p); err != nil {
+		p = &Player{}
 	}
-	return e
 }

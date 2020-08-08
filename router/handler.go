@@ -23,11 +23,16 @@ type (
 		EventReceiver chan model.EventData
 	}
 
+	RoomPlayerConn struct {
+		RoomPlayer    model.RoomPlayer
+		EventReceiver chan model.RoomEventData
+	}
+
 	RoomConn struct {
-		ConnectionMx   sync.RWMutex
-		PlayersConn    map[string]*PlayerConn
-		Room           model.Room
-		EventBroadcast chan model.EventData
+		ConnectionMx    sync.RWMutex
+		RoomPlayersConn map[string]*RoomPlayerConn
+		Room            model.Room
+		EventBroadcast  chan model.RoomEventData
 	}
 
 	RouterHub struct {

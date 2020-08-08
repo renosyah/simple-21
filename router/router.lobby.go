@@ -34,7 +34,9 @@ func (h *RouterHub) HandleLobby(w http.ResponseWriter, r *http.Request) {
 			break
 		}
 
-		event := model.FromJson(msg)
+		event := &model.EventData{}
+		event.FromJson(msg)
+
 		switch event.Name {
 		case model.LOBBY_EVENT_JOIN:
 		case model.LOBBY_EVENT_EXIT:
@@ -43,7 +45,7 @@ func (h *RouterHub) HandleLobby(w http.ResponseWriter, r *http.Request) {
 		}
 
 		// testing broadcast
-		h.EventBroadcast <- model.FromJson(msg)
+		h.EventBroadcast <- *event
 
 	}
 

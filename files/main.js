@@ -23,9 +23,6 @@ new Vue({
         window.$('.modal').modal()
     },
     computed : {
-        baseUrl(){
-            return this.host.protocol.concat(this.host.name + ":" + this.host.port + "/")
-        },
         getPageName(){
             let param = new URLSearchParams(window.location.search)
             let name = param.get('page')
@@ -62,6 +59,9 @@ new Vue({
             this.host.name = window.location.hostname
             this.host.port = location.port
             this.host.protocol = location.protocol.concat("//")
-        }
+        },
+        baseUrl(){
+            return this.host.protocol.concat(this.host.name + ":" + this.host.port + "/")
+        },
     }
 })

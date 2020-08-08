@@ -33,6 +33,7 @@ var rootCmd = &cobra.Command{
 		r := mux.NewRouter()
 
 		r.HandleFunc("/register", routerHub.HandleAddPlayer)
+		r.HandleFunc("/player", routerHub.HandleDetailPlayer)
 		r.HandleFunc("/logout", routerHub.HandleRemovePlayer)
 
 		r.HandleFunc("/wslobby", routerHub.HandleLobby)
@@ -116,7 +117,7 @@ func initConfig() {
 
 		viper.AddConfigPath(".")
 		viper.AddConfigPath(home)
-		viper.AddConfigPath("/etc/chat-app-core")
+		viper.AddConfigPath("/etc/simple-21")
 		viper.SetConfigName(".server")
 	}
 

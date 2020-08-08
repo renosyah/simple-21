@@ -7,29 +7,28 @@ import (
 	"github.com/renosyah/simple-21/model"
 )
 
-func (h *RouterHub) addPlayerConnection(id string, playerConn *PlayerConn) (stream chan model.EventData) {
+func (h *LobbiesHub) addPlayerConnection(id string) (stream chan model.EventData) {
 	h.ConnectionMx.Lock()
 	defer h.ConnectionMx.Unlock()
 
 	stream = make(chan model.EventData)
-	h.PlayersConn[id] = playerConn
-	h.PlayersConn[id].EventReceiver = stream
+	h.PlayersConn[id] = stream
 
 	return
 }
 
-func (h *RouterHub) removePlayerConnection(id string) {
+func (h *LobbiesHub) removePlayerConnection(id string) {
 	h.ConnectionMx.Lock()
 	defer h.ConnectionMx.Unlock()
 	if _, ok := h.PlayersConn[id]; ok {
-		close(h.PlayersConn[id].EventReceiver)
+		close(h.PlayersConn[id])
 		delete(h.PlayersConn, id)
 	}
 }
 
-func (h *RouterHub) receiveBroadcastsEvent(ctx context.Context, wsconn *websocket.Conn, player *PlayerConn) {
-	streamClient := h.addPlayerConnection(player.Player.ID, player)
-	defer h.removePlayerConnection(player.Player.ID)
+func (h *LobbiesHub) receiveBroadcastsEvent(ctx context.Context, wsconn *websocket.Conn, id string) {
+	streamClient := h.addPlayerConnection(id)
+	defer h.removePlayerConnection(id)
 
 	for {
 		select {

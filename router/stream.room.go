@@ -3,6 +3,7 @@ package router
 import (
 	"context"
 	"fmt"
+	"sync"
 	"time"
 
 	"github.com/gorilla/websocket"
@@ -26,41 +27,40 @@ func (h *RouterHub) openRoom(pHostID string, player []model.RoomPlayer) {
 		Cards:        model.NewCards(),
 	}
 
-	h.RoomsConn[room.ID] = h.createRoomHub(room)
+	h.Rooms[room.ID] = h.createRoomHub(room)
 }
 
 func (h *RouterHub) closeRoom(roomID string) {
 	h.ConnectionMx.Lock()
 	defer h.ConnectionMx.Unlock()
-	if _, ok := h.RoomsConn[roomID]; ok {
-		close(h.RoomsConn[roomID].EventBroadcast)
-		delete(h.RoomsConn, roomID)
+	if _, ok := h.Rooms[roomID]; ok {
+		close(h.Rooms[roomID].EventBroadcast)
+		delete(h.Rooms, roomID)
 	}
 }
 
-func (h *RoomConn) addPlayerRoomConnection(p *RoomPlayerConn) (stream chan model.RoomEventData) {
+func (h *RoomsHub) addPlayerRoomConnection(id string) (stream chan model.RoomEventData) {
 	h.ConnectionMx.Lock()
 	defer h.ConnectionMx.Unlock()
 
 	stream = make(chan model.RoomEventData)
-	h.RoomPlayersConn[p.RoomPlayer.ID] = p
-	h.RoomPlayersConn[p.RoomPlayer.ID].EventReceiver = stream
+	h.RoomPlayersConn[id] = stream
 
 	return
 }
 
-func (h *RoomConn) removePlayerRoomConnection(p *RoomPlayerConn) {
+func (h *RoomsHub) removePlayerRoomConnection(id string) {
 	h.ConnectionMx.Lock()
 	defer h.ConnectionMx.Unlock()
-	if _, ok := h.RoomPlayersConn[p.RoomPlayer.ID]; ok {
-		close(h.RoomPlayersConn[p.RoomPlayer.ID].EventReceiver)
-		delete(h.RoomPlayersConn, p.RoomPlayer.ID)
+	if _, ok := h.RoomPlayersConn[id]; ok {
+		close(h.RoomPlayersConn[id])
+		delete(h.RoomPlayersConn, id)
 	}
 }
 
-func (h *RoomConn) receiveBroadcastsEvent(ctx context.Context, wsconn *websocket.Conn, player *RoomPlayerConn) {
-	streamClient := h.addPlayerRoomConnection(player)
-	defer h.removePlayerRoomConnection(player)
+func (h *RoomsHub) receiveBroadcastsEvent(ctx context.Context, wsconn *websocket.Conn, id string) {
+	streamClient := h.addPlayerRoomConnection(id)
+	defer h.removePlayerRoomConnection(id)
 
 	for {
 		select {
@@ -74,10 +74,11 @@ func (h *RoomConn) receiveBroadcastsEvent(ctx context.Context, wsconn *websocket
 	}
 }
 
-func (h *RouterHub) createRoomHub(room model.Room) *RoomConn {
-	r := &RoomConn{
+func (h *RouterHub) createRoomHub(room model.Room) *RoomsHub {
+	r := &RoomsHub{
+		ConnectionMx:    sync.RWMutex{},
 		Room:            room,
-		RoomPlayersConn: make(map[string]*RoomPlayerConn),
+		RoomPlayersConn: make(map[string]chan model.RoomEventData),
 		EventBroadcast:  make(chan model.RoomEventData),
 	}
 	go func() {
@@ -88,12 +89,12 @@ func (h *RouterHub) createRoomHub(room model.Room) *RoomConn {
 				case ROOM_STATUS_USE:
 
 					r.ConnectionMx.RLock()
-					for _, c := range r.RoomPlayersConn {
+					for i, c := range r.RoomPlayersConn {
 						select {
-						case c.EventReceiver <- msg:
+						case c <- msg:
 
 						case <-time.After((1 * time.Second)):
-							r.removePlayerRoomConnection(c)
+							r.removePlayerRoomConnection(i)
 						}
 					}
 					r.ConnectionMx.RUnlock()

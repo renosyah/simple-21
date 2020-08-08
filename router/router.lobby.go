@@ -20,33 +20,79 @@ func (h *RouterHub) HandleLobby(w http.ResponseWriter, r *http.Request) {
 
 	defer wsconn.Close()
 
-	// testing broadcast
-	go h.receiveBroadcastsEvent(ctx, wsconn, &PlayerConn{Player: model.Player{ID: "00001", Name: "Reno"}})
-
 	for {
 
 		mType, msg, err := wsconn.ReadMessage()
 		if err != nil {
-			break
+			return
 		}
 
 		if mType != websocket.TextMessage {
-			break
+			return
 		}
 
 		event := &model.EventData{}
 		event.FromJson(msg)
 
 		switch event.Name {
-		case model.LOBBY_EVENT_JOIN:
+		case model.LOBBY_EVENT_REJOIN:
+
+			/* */
+			/* for player already register */
+			/* and decide to join lobby */
+			/* check his data first, if exist */
+			/* he have right to receive event */
+			/* if not, just return message his data */
+			/* not exist */
+			/* */
+
+			p := &model.Player{}
+			p.FromJson(model.ToJson(event.Data))
+
+			if _, ok := h.Players[p.ID]; ok {
+
+				go h.Lobbies.receiveBroadcastsEvent(ctx, wsconn, p.ID)
+
+				h.Lobbies.EventBroadcast <- model.EventData{
+					Name: model.LOBBY_EVENT_ON_JOIN,
+					Data: p,
+				}
+
+			} else {
+
+				resp := model.EventData{
+					Name: model.LOBBY_EVENT_ON_NOT_FOUND,
+					Data: model.Player{},
+				}
+				wsconn.WriteMessage(websocket.TextMessage, model.ToJson(resp))
+
+			}
+
 		case model.LOBBY_EVENT_EXIT:
-		case model.LOBBY_EVENT_NOT_FOUND:
+
+			/* */
+			/* for player already register */
+			/* and decide to exit from lobby */
+			/* broadcast to other this player */
+			/* is decide to disconect */
+			/* */
+
+			p := &model.Player{}
+			p.FromJson(model.ToJson(event.Data))
+
+			h.Lobbies.EventBroadcast <- model.EventData{
+				Name: model.LOBBY_EVENT_ON_EXIT,
+				Data: p,
+			}
+
+		case model.LOBBY_EVENT_ON_NOT_FOUND:
+			/* this event is for client */
+		case model.LOBBY_EVENT_ON_JOIN:
+			/* this event is for client */
+		case model.LOBBY_EVENT_ON_EXIT:
+			/* this event is for client */
 		default:
 		}
-
-		// testing broadcast
-		h.EventBroadcast <- *event
-
 	}
 
 }

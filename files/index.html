@@ -67,7 +67,6 @@
                     </div>
                 </div>
             </div>
-
         </div>
 
         <!---------SIGN IN PAGE---------->
@@ -81,17 +80,17 @@
 
                             <div class="card">
                                 <div class="card-title">
-                                    <h3 class="center green-text">
+                                    <h5 class="center green-text">
                                         <br />
                                         <span v-show="localizeCheck('ind')">Selamat datang!</span>
                                         <span v-show="localizeCheck('en')">Welcome!</span>
-                                    </h3>
+                                    </h5>
                                 </div>
                                 <div class="card-image">
                                 </div>
                                 <div class="card-content">
                                     <div class="input-field">
-                                        <input id="fullname" type="text" class="validate">
+                                        <input id="fullname" type="text" class="validate" v-model="player.name">
                                         <label for="fullname">
                                             <span v-show="localizeCheck('ind')">Nama Pemain</span>
                                             <span v-show="localizeCheck('en')">Player Name</span>
@@ -99,7 +98,7 @@
                                     </div>
                                 </div>
                                 <div class="center card-action">
-                                    <a class="waves-effect waves-light btn-large btn green white-text" style="text-transform:none;width: 100%;" @click="switchPage('main-page')">
+                                    <a class="waves-effect waves-light btn-large btn green white-text" style="text-transform:none;width: 100%;" @click="register(player.name)">
                                         <b>
                                             <span v-show="localizeCheck('ind')">Masuk</span>
                                             <span v-show="localizeCheck('en')">Enter</span>
@@ -123,8 +122,8 @@
                             <ul class="collection">
                                 <li class="collection-item avatar">
                                     <i class="material-icons circle green">account_circle</i>
-                                    <span class="title">Mr Foo Bar</span>
-                                    <p> $ 500 </p>
+                                    <span class="title">{{ player.name }}</span>
+                                    <p> $ {{ player.money }}</p>
                                 </li>
                             </ul>
                             <div class="row">
@@ -138,7 +137,7 @@
                                 </div>
                                 <div class="center col s6 s6 l6">
                                     <br />
-                                    <a class="col s12 waves-effect waves-light btn-large grey white-text" @click="switchPage('login-page')">
+                                    <a class="col s12 waves-effect waves-light btn-large grey white-text" @click="exit">
                                         <span v-show="localizeCheck('ind')">Keluar</span>
                                         <span v-show="localizeCheck('en')">Exit</span>
                                     </a>

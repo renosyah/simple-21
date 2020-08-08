@@ -26,6 +26,16 @@ func (h *LobbiesHub) removePlayerConnection(id string) {
 	}
 }
 
+func (h *RouterHub) setPlayerOnlineStatus(id string, isOnline bool) {
+	h.ConnectionMx.Lock()
+	if p, ok := h.Players[id]; ok {
+		p.IsOnline = isOnline
+	}
+	h.ConnectionMx.Unlock()
+
+	h.Lobbies.EventBroadcast <- model.EventData{Name: model.LOBBY_EVENT_ON_DISCONNECTED}
+}
+
 func (h *LobbiesHub) receiveBroadcastsEvent(ctx context.Context, wsconn *websocket.Conn, id string) {
 	streamClient := h.addPlayerConnection(id)
 	defer h.removePlayerConnection(id)

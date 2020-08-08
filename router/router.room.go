@@ -19,7 +19,7 @@ func (h *RouterHub) HandleAddRoom(w http.ResponseWriter, r *http.Request) {
 	h.ConnectionMx.Lock()
 	defer h.ConnectionMx.Unlock()
 
-	h.openRoom(param.OwnerID, param.RoomPlayers)
+	h.openRoom(param.OwnerID, param.Name, param.RoomPlayers)
 
 	h.Lobbies.EventBroadcast <- model.EventData{
 		Name: model.LOBBY_EVENT_ROOM_CREATED,
@@ -33,7 +33,7 @@ func (h *RouterHub) HandleListRoom(w http.ResponseWriter, r *http.Request) {
 	rooms := []model.Room{}
 
 	for _, r := range h.Rooms {
-		rooms = append(rooms, r.Room)
+		rooms = append(rooms, *r.Room)
 	}
 
 	api.HttpResponse(w, r, rooms, http.StatusOK)
@@ -58,7 +58,7 @@ func (h *RouterHub) HandleDetailRoom(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *RouterHub) HandleRemoveRoom(w http.ResponseWriter, r *http.Request) {
-	var param model.Room
+	var param model.DeleteRoom
 
 	err := ParseBodyData(r.Context(), r, &param)
 	if err != nil {
@@ -72,8 +72,13 @@ func (h *RouterHub) HandleRemoveRoom(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	if param.PlayerID != room.Room.OwnerID {
+		w.WriteHeader(http.StatusForbidden)
+		return
+	}
+
 	room.EventBroadcast <- model.RoomEventData{
-		Name:   model.ROOM_EVENT_ROOM_REMOVE,
+		Name:   model.LOBBY_EVENT_ROOM_REMOVE,
 		Status: ROOM_STATUS_NOT_USE,
 		Data:   nil,
 	}

@@ -162,12 +162,11 @@
                                 <li class="collection-item avatar">
                                     <i class="material-icons circle green">account_circle</i>
                                     <span class="title">
-                                        <span v-show="localizeCheck('ind')">Pemain</span>
-                                        <span v-show="localizeCheck('en')">Player</span>
-                                        {{ p.name }}
+                                        {{ p.name }} 
                                     </span>
                                     <p>$ {{ p.money }} <br>
                                     </p>
+                                    <a href="#!" class="secondary-content"><i class="material-icons">{{ p.is_online ? "link" : "link_off" }}</i></a>
                                 </li>
                             </ul>
                         </div>
@@ -209,6 +208,15 @@
     <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
     <script>
 
+	// FOR BROADCASTER
+	const LOBBY_EVENT_ROOM_CREATED = "LOBBY_EVENT_ROOM_CREATED"
+	const LOBBY_EVENT_ROOM_REMOVE  = "LOBBY_EVENT_ROOM_REMOVED"
+
+	// FOR BROADCASTER RECEIVER
+	const LOBBY_EVENT_ON_JOIN         = "LOBBY_EVENT_ON_PLAYER_JOIN"
+	const LOBBY_EVENT_ON_DISCONNECTED = "LOBBY_EVENT_ON_PLAYER_DISCONNECTED"
+	const LOBBY_EVENT_ON_LOGOUT       = "LOBBY_EVENT_ON_PLAYER_LOGOUT"
+
     new Vue({
         el: '#app',
         data() {
@@ -222,10 +230,12 @@
                 rooms : [],
                 room : {
                     id:"",
-                    owner :"",
+                    name : "",
                     player_turn_id : "",
                     room_players : [],
                 },
+                lobby_ws : null,
+                room_ws : null,
                 is_online : true,
                 is_loading : false,
                 host : {
@@ -246,8 +256,7 @@
             window.$('.dropdown-trigger').dropdown()
             window.$('.modal').modal()
             this.initPlayer()
-            this.initPlayers()
-            this.initRooms()
+            
         },
         computed : {
             getPageName(){
@@ -289,13 +298,14 @@
                             return
                         }
                         this.player = response.data.result
+                        this.initLobbyWs()
                     })
                     .catch(e => {
                         console.log(e)
                         this.is_loading = false
                     })
             },
-            initPlayers(){
+            getPlayers(){
                 this.is_loading = true
                 axios.get(this.baseUrl() + "players")
                     .then(response => {
@@ -320,7 +330,7 @@
                         this.is_loading = false
                     })
             },
-            initRooms(){
+            getRooms(){
                 this.is_loading = true
                 axios.get(this.baseUrl() + "rooms")
                     .then(response => {
@@ -331,6 +341,32 @@
                         console.log(e)
                         this.is_loading = false
                     })
+            },
+            initLobbyWs(){
+                this.lobby_ws = new WebSocket("ws://" + this.host.name + ":" + this.host.port + "/ws-lobby?id-player=" + this.player.id)
+                this.lobby_ws.onmessage = (evt) => {
+                    let event = JSON.parse(evt.data)
+                    switch (event.name) {
+                        case LOBBY_EVENT_ON_JOIN: case LOBBY_EVENT_ON_LOGOUT: case LOBBY_EVENT_ON_DISCONNECTED:
+                            this.getPlayers()
+                            break;
+                        case LOBBY_EVENT_ROOM_CREATED: case LOBBY_EVENT_ROOM_REMOVE:
+                            this.getRooms()
+                            break;
+                        default: break;
+                    }
+                 }
+                 this.lobby_ws.onopen = () => {
+
+                    this.lobby_ws.send(JSON.stringify({
+                        name : "LOBBY_EVENT_PLAYER_REJOIN",
+                        data : this.player,
+                    }))
+
+                 }
+                this.lobby_ws.onclose = () => { }
+                this.getPlayers()
+                this.getRooms()
             },
             switchPage(name){
                 if ('URLSearchParams' in window) {

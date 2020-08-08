@@ -8,7 +8,8 @@ type (
 	Card struct {
 		ID    string `json:"id"`
 		Label string `json:"label"`
-		Value string `json:"value"`
+		Value int    `json:"value"`
+		Show  bool   `json:"show"`
 	}
 )
 
@@ -18,7 +19,7 @@ func NewCards() []Card {
 		cards = append(cards, Card{
 			ID:    fmt.Sprint("CARD-", i),
 			Label: GetLabel(fmt.Sprint(i)),
-			Value: fmt.Sprint(i),
+			Value: i,
 		})
 	}
 

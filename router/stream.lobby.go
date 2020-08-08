@@ -1,7 +1,6 @@
 package router
 
 import (
-	"fmt"
 	"net/http"
 
 	"github.com/gorilla/websocket"
@@ -11,88 +10,56 @@ import (
 func (h *RouterHub) HandleStreamLobby(w http.ResponseWriter, r *http.Request) {
 
 	ctx := r.Context()
+	pID := r.FormValue("id-player")
 
-	wsconn, err := upgrader.Upgrade(w, r, nil)
-	if err != nil {
-		fmt.Println(err)
+	if pID == "" {
+		w.WriteHeader(http.StatusBadRequest)
 		return
 	}
 
+	if _, ok := h.Players[pID]; !ok {
+		w.WriteHeader(http.StatusNotFound)
+		return
+	}
+
+	h.Lobbies.EventBroadcast <- model.EventData{Name: model.LOBBY_EVENT_ON_JOIN}
+
+	wsconn, err := upgrader.Upgrade(w, r, nil)
+	if err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+	}
+
+	h.setPlayerOnlineStatus(pID, true)
+	defer h.setPlayerOnlineStatus(pID, false)
 	defer wsconn.Close()
+
+	go h.Lobbies.receiveBroadcastsEvent(ctx, wsconn, pID)
 
 	for {
 
 		mType, msg, err := wsconn.ReadMessage()
 		if err != nil {
-			return
+			break
 		}
 
 		if mType != websocket.TextMessage {
-			return
+			break
 		}
 
-		event := &model.EventData{}
-		event.FromJson(msg)
-
+		event := (&model.EventData{}).FromJson(msg)
 		switch event.Name {
-		case model.LOBBY_EVENT_REJOIN:
-
-			/* */
-			/* for player already register */
-			/* and decide to join lobby */
-			/* check his data first, if exist */
-			/* he have right to receive event */
-			/* if not, just return message his data */
-			/* not exist */
-			/* */
-
-			p := &model.Player{}
-			p.FromJson(model.ToJson(event.Data))
-
-			if _, ok := h.Players[p.ID]; ok {
-
-				go h.Lobbies.receiveBroadcastsEvent(ctx, wsconn, p.ID)
-
-				h.Lobbies.EventBroadcast <- model.EventData{
-					Name: model.LOBBY_EVENT_ON_JOIN,
-					Data: p,
-				}
-
-			} else {
-
-				resp := model.EventData{
-					Name: model.LOBBY_EVENT_ON_NOT_FOUND,
-					Data: model.Player{},
-				}
-				wsconn.WriteMessage(websocket.TextMessage, model.ToJson(resp))
-
-			}
-
-		case model.LOBBY_EVENT_EXIT:
-
-			/* */
-			/* for player already register */
-			/* and decide to exit from lobby */
-			/* broadcast to other this player */
-			/* is decide to disconect */
-			/* */
-
-			p := &model.Player{}
-			p.FromJson(model.ToJson(event.Data))
-
-			h.Lobbies.EventBroadcast <- model.EventData{
-				Name: model.LOBBY_EVENT_ON_EXIT,
-				Data: p,
-			}
-
-		case model.LOBBY_EVENT_ON_NOT_FOUND:
-			/* this event is for client */
 		case model.LOBBY_EVENT_ON_JOIN:
 			/* this event is for client */
-		case model.LOBBY_EVENT_ON_EXIT:
+		case model.LOBBY_EVENT_ON_DISCONNECTED:
+			/* this event is for client */
+		case model.LOBBY_EVENT_ROOM_CREATED:
+			/* this event is for client */
+		case model.LOBBY_EVENT_ROOM_REMOVE:
+			/* this event is for client */
+		case model.LOBBY_EVENT_ON_LOGOUT:
 			/* this event is for client */
 		default:
 		}
 	}
-
 }

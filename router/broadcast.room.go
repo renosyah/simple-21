@@ -16,14 +16,15 @@ const (
 	ROOM_STATUS_NOT_USE = 1
 )
 
-func (h *RouterHub) openRoom(pHostID string, player []model.RoomPlayer) {
+func (h *RouterHub) openRoom(pHostID, name string, player []*model.RoomPlayer) {
 	h.ConnectionMx.Lock()
 	defer h.ConnectionMx.Unlock()
 
-	room := model.Room{
+	room := &model.Room{
 		ID:           fmt.Sprint(uuid.NewV4()),
 		PlayerTurnID: pHostID,
 		OwnerID:      pHostID,
+		Name:         name,
 		RoomPlayers:  player,
 		Cards:        model.NewCards(),
 	}
@@ -75,7 +76,7 @@ func (h *RoomsHub) receiveBroadcastsEvent(ctx context.Context, wsconn *websocket
 	}
 }
 
-func (h *RouterHub) createRoomHub(room model.Room) *RoomsHub {
+func (h *RouterHub) createRoomHub(room *model.Room) *RoomsHub {
 	r := &RoomsHub{
 		ConnectionMx:    sync.RWMutex{},
 		Room:            room,

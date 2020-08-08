@@ -23,6 +23,7 @@ func (h *RouterHub) HandleAddPlayer(w http.ResponseWriter, r *http.Request) {
 
 	param.ID = fmt.Sprint(uuid.NewV4())
 	param.Money = 500
+	param.IsOnline = true
 
 	h.Players[param.ID] = &param
 

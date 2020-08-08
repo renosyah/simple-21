@@ -13,7 +13,6 @@
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
     <link href="./css/materialize.css" type="text/css" rel="stylesheet" media="screen,projection" />
     <link href="./css/custom.css" type="text/css" rel="stylesheet" media="screen,projection" />
-    
 </head>
 
 <body>
@@ -166,7 +165,7 @@
                                     </span>
                                     <p>$ {{ p.money }} <br>
                                     </p>
-                                    <a href="#!" class="secondary-content"><i class="material-icons">{{ p.is_online ? "link" : "link_off" }}</i></a>
+                                    <a href="#!" class="secondary-content"><i :class="{'material-icons':true,'red-text':!p.is_online,'green-text':p.is_online}">{{ p.is_online ? "link" : "link_off" }}</i></a>
                                 </li>
                             </ul>
                         </div>
@@ -306,18 +305,16 @@
                     })
             },
             getPlayers(){
-                this.is_loading = true
                 axios.get(this.baseUrl() + "players")
                     .then(response => {
-                        this.is_loading = false
                         this.players = response.data.result
                     })
                     .catch(e => {
                         console.log(e)
-                        this.is_loading = false
                     })
             },
             exit(){
+                this.lobby_ws.close()
                 this.is_loading = true
                 axios.post(this.baseUrl() + "delplayer", JSON.stringify(this.player))
                     .then(response => {
@@ -331,15 +328,12 @@
                     })
             },
             getRooms(){
-                this.is_loading = true
                 axios.get(this.baseUrl() + "rooms")
                     .then(response => {
-                        this.is_loading = false
                         this.rooms = response.data.result
                     })
                     .catch(e => {
                         console.log(e)
-                        this.is_loading = false
                     })
             },
             initLobbyWs(){
@@ -355,16 +349,7 @@
                             break;
                         default: break;
                     }
-                 }
-                 this.lobby_ws.onopen = () => {
-
-                    this.lobby_ws.send(JSON.stringify({
-                        name : "LOBBY_EVENT_PLAYER_REJOIN",
-                        data : this.player,
-                    }))
-
-                 }
-                this.lobby_ws.onclose = () => { }
+                }
                 this.getPlayers()
                 this.getRooms()
             },

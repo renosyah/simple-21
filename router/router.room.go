@@ -2,13 +2,14 @@ package router
 
 import (
 	"net/http"
+	"sort"
 
 	"github.com/renosyah/simple-21/api"
 	"github.com/renosyah/simple-21/model"
 )
 
 func (h *RouterHub) HandleAddRoom(w http.ResponseWriter, r *http.Request) {
-	var param model.Room
+	var param model.AddRoom
 
 	err := ParseBodyData(r.Context(), r, &param)
 	if err != nil {
@@ -19,7 +20,7 @@ func (h *RouterHub) HandleAddRoom(w http.ResponseWriter, r *http.Request) {
 	h.ConnectionMx.Lock()
 	defer h.ConnectionMx.Unlock()
 
-	h.openRoom(param.OwnerID, param.Name, param.RoomPlayers)
+	h.openRoom(param.HostID, param.Name, param.Players)
 
 	h.Lobbies.EventBroadcast <- model.EventData{
 		Name: model.LOBBY_EVENT_ROOM_CREATED,
@@ -33,8 +34,15 @@ func (h *RouterHub) HandleListRoom(w http.ResponseWriter, r *http.Request) {
 	rooms := []model.Room{}
 
 	for _, r := range h.Rooms {
-		rooms = append(rooms, *r.Room)
+		rooms = append(rooms, model.Room{
+			ID:   r.Room.ID,
+			Name: r.Room.Name,
+		})
 	}
+
+	sort.Slice(rooms, func(i, j int) bool {
+		return rooms[i].Name < rooms[j].Name
+	})
 
 	api.HttpResponse(w, r, rooms, http.StatusOK)
 }
@@ -73,7 +81,7 @@ func (h *RouterHub) HandleRemoveRoom(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if param.PlayerID != room.Room.OwnerID {
-		w.WriteHeader(http.StatusForbidden)
+		api.HttpResponseException(w, r, http.StatusForbidden)
 		return
 	}
 

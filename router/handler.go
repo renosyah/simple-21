@@ -20,7 +20,11 @@ var upgrader = &websocket.Upgrader{
 type (
 	RoomsHub struct {
 		ConnectionMx    sync.RWMutex
-		Room            *model.Room
+		Room            model.Room
+		PlayerTurnID    string
+		Dealer          *model.RoomPlayer
+		RoomPlayers     map[string]*model.RoomPlayer
+		Cards           map[string]*model.Card
 		RoomPlayersConn map[string]chan model.RoomEventData
 		EventBroadcast  chan model.RoomEventData
 	}

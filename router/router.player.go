@@ -3,6 +3,7 @@ package router
 import (
 	"fmt"
 	"net/http"
+	"sort"
 
 	"github.com/renosyah/simple-21/api"
 	"github.com/renosyah/simple-21/model"
@@ -41,6 +42,10 @@ func (h *RouterHub) HandleListPlayer(w http.ResponseWriter, r *http.Request) {
 	for _, p := range h.Players {
 		players = append(players, *p)
 	}
+
+	sort.Slice(players, func(i, j int) bool {
+		return players[i].Name < players[j].Name
+	})
 
 	api.HttpResponse(w, r, players, http.StatusOK)
 }

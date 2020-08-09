@@ -31,8 +31,8 @@
                         <div class="col s12 m2"></div>
                         <div class="col s12 m8">
                             <div class="chip red white-text center">
-                                <span class="white-text" v-show="localizeCheck('ind')">Perangkat Anda Sedang Offline!</span>
-                                <span class="white-text" v-show="localizeCheck('en')">Your Device is Offline!</span>
+                                <span class="white-text" v-show="langCheck('ind')">Perangkat Anda Sedang Offline!</span>
+                                <span class="white-text" v-show="langCheck('en')">Your Device is Offline!</span>
                             </div>
                         </div>
                         <div class="col s12 m2"></div>
@@ -81,8 +81,8 @@
                                 <div class="card-title">
                                     <h5 class="center green-text">
                                         <br />
-                                        <span v-show="localizeCheck('ind')">Selamat datang!</span>
-                                        <span v-show="localizeCheck('en')">Welcome!</span>
+                                        <span v-show="langCheck('ind')">Selamat datang!</span>
+                                        <span v-show="langCheck('en')">Welcome!</span>
                                     </h5>
                                 </div>
                                 <div class="card-image">
@@ -91,16 +91,16 @@
                                     <div class="input-field">
                                         <input id="fullname" type="text" class="validate" v-model="player.name">
                                         <label for="fullname">
-                                            <span v-show="localizeCheck('ind')">Nama Pemain</span>
-                                            <span v-show="localizeCheck('en')">Player Name</span>
+                                            <span v-show="langCheck('ind')">Nama Pemain</span>
+                                            <span v-show="langCheck('en')">Player Name</span>
                                         </label>
                                     </div>
                                 </div>
                                 <div class="center card-action">
                                     <a class="waves-effect waves-light btn-large btn green white-text" style="text-transform:none;width: 100%;" @click="addPlayer">
                                         <b>
-                                            <span v-show="localizeCheck('ind')">Masuk</span>
-                                            <span v-show="localizeCheck('en')">Enter</span>
+                                            <span v-show="langCheck('ind')">Masuk</span>
+                                            <span v-show="langCheck('en')">Enter</span>
                                         </b>    
                                     </a>
                                 </div>
@@ -129,16 +129,16 @@
                                 <div class="center col s6 s6 l6">
                                     <br />
                                     <a class="col s12 waves-effect waves-light btn-large green white-text">
-                                        <span v-show="localizeCheck('ind')">Buat Ruangan</span>
-                                        <span v-show="localizeCheck('en')">Create Room</span>
+                                        <span v-show="langCheck('ind')">Buat Ruangan</span>
+                                        <span v-show="langCheck('en')">Create Room</span>
                                     </a>
                                     
                                 </div>
                                 <div class="center col s6 s6 l6">
                                     <br />
                                     <a class="col s12 waves-effect waves-light btn-large grey white-text" @click="exit">
-                                        <span v-show="localizeCheck('ind')">Keluar</span>
-                                        <span v-show="localizeCheck('en')">Exit</span>
+                                        <span v-show="langCheck('ind')">Keluar</span>
+                                        <span v-show="langCheck('en')">Exit</span>
                                     </a>
                                     
                                 </div> 
@@ -150,12 +150,12 @@
                     <div class="col s12 m6 l4">
                         <div class="card-panel white">
                             <h6 class="green-text">
-                                <span v-show="localizeCheck('ind')">Pemain ({{ players.length }})</span>
-                                <span v-show="localizeCheck('en')">Players ({{ players.length }})</span>
+                                <span v-show="langCheck('ind')">Pemain ({{ players.length }})</span>
+                                <span v-show="langCheck('en')">Players ({{ players.length }})</span>
                             </h6>
                             <p v-show="players.length <= 1">-                                         
-                                <span v-show="localizeCheck('ind')">Tidak Ada Pemain Lain</span>
-                                <span v-show="localizeCheck('en')">No Other Player Online</span> 
+                                <span v-show="langCheck('ind')">Tidak Ada Pemain Lain</span>
+                                <span v-show="langCheck('en')">No Other Player Online</span> 
                             -</p>
                             <ul class="collection" v-for="p in players" v-bind:key="p.id" v-show="p.id != player.id">
                                 <li class="collection-item avatar">
@@ -173,22 +173,22 @@
                     <div class="col s12 m6 l8">
                         <div class="card-panel white">
                             <h6 class="green-text">
-                                <span v-show="localizeCheck('ind')">Ruang Bermain ({{ rooms.length }})</span>
-                                <span v-show="localizeCheck('en')">Rooms ({{ rooms.length }})</span>
+                                <span v-show="langCheck('ind')">Ruang Bermain ({{ rooms.length }})</span>
+                                <span v-show="langCheck('en')">Rooms ({{ rooms.length }})</span>
                             </h6>
                             <p v-show="rooms.length == 0">-                                         
-                                <span v-show="localizeCheck('ind')">Tidak Ada Ruangan</span>
-                                <span v-show="localizeCheck('en')">No Room</span> 
+                                <span v-show="langCheck('ind')">Tidak Ada Ruangan</span>
+                                <span v-show="langCheck('en')">No Room</span> 
                             -</p>
                             <ul class="collection" v-for="(r,i) in rooms" v-bind:key="r.id">
                                 <li class="collection-item avatar">
                                     <i class="material-icons circle green">group</i>
                                     <span class="title">
-                                        <span v-show="localizeCheck('ind')">Ruangan</span>
-                                        <span v-show="localizeCheck('en')">Room</span>
+                                        <span v-show="langCheck('ind')">Ruangan</span>
+                                        <span v-show="langCheck('en')">Room</span>
                                     {{ r.name }}</span>
                                     <p> </p>
-                                    <a class="secondary-content"><i class="material-icons">arrow_forward</i></a>
+                                    <a class="secondary-content" @click="initRoomWs(r.id)"><i class="material-icons">arrow_forward</i></a>
                                 </li>
                             </ul>
                         </div>
@@ -196,14 +196,27 @@
                 </div>
             </div>
         </div>
+
+
         <!---------ROOM PAGE---------->
         <div v-show="getPageName == 'room-page'">
+
             <div class="row">
                 <div class="col m3 l3 hide-on-small-only">
+                    <div class="card-panel white center ">                     
+                        <h6 class="green-text">
+                            <span v-show="langCheck('ind')"> Nama ruangan </span>
+                            <span v-show="langCheck('en')">Room Name </span>
+                        </h6>
+                        <a class="waves-effect waves-light btn-large green white-text">
+                            <span v-show="langCheck('ind')">Keluar Ruangan</span>
+                            <span v-show="langCheck('en')">Exit Room</span>
+                        </a> 
+                    </div>  
                     <div class="card-panel white">
                         <h6 class="green-text">
-                            <span v-show="localizeCheck('ind')">Pemain</span>
-                            <span v-show="localizeCheck('en')">Players</span>
+                            <span v-show="langCheck('ind')">Pemain</span>
+                            <span v-show="langCheck('en')">Players</span>
                         </h6>
                         <ul class="collection" v-for="p in [1,2,3,4]" v-bind:key="p">
                             <li class="collection-item avatar">
@@ -211,7 +224,9 @@
                                 <span class="title">
                                    Player {{ p }} 
                                 </span>
-                                <p> Joined </p>
+                                <p> Bet : $ 250 <br> 
+                                    Status : Playing
+                                </p>
                             </li>
                         </ul>
                     </div>
@@ -220,19 +235,16 @@
                     <div class="row">
                         <div class="col s12 m12 l12">
                             <div class="card-panel white">
-                                <h6 class="green-text">
-                                    <span v-show="localizeCheck('ind')"> Nama ruangan </span>
-                                    <span v-show="localizeCheck('en')">Room Name </span>
-                                </h6>
                                 <ul class="collection">
                                     <li class="collection-item avatar">
-                                        <i class="material-icons circle green">group</i>
+                                        <i class="material-icons circle green">account_circle</i>
                                         <span class="title">
-                                            <span v-show="localizeCheck('ind')">Dealer</span>
-                                            <span v-show="localizeCheck('en')">Dealer</span>
-                                        </span>  
+                                            <span v-show="langCheck('ind')">Dealer</span>
+                                            <span v-show="langCheck('en')">Dealer</span>
+                                        </span>
+                                        <p>Total : 5 + ?  <br /><br /> </p>  
                                         <div class="row">  
-                                            <div v-for="(c,ic) in ['A','1','2','3','1','2','3','1','2','3','J','Q','K']" v-bind:key="ic" class="col s1 m1 l1 card-panel z-depth-3" :class="{'white': ic % 2 == 0,'grey lighten-1': ic % 2 != 0}" :style="{'width': '90px','margin-left':  ic > 1 ? '-50px' : '15px'}">
+                                            <div v-for="(c,ic) in ['A','1','2','3','4','5','6','7','8','9','10','J','Q','K']" v-bind:key="ic" class="col s1 m1 l1 card-panel z-depth-2 remi-card" :class="{'white': ic % 2 == 0,'grey lighten-1': ic % 2 != 0}" style="width: 90px;margin-left:-50px;float:left;">
                                                 <span class="black-text" v-show="ic % 2 == 0">
                                                     <span class="left">{{ c }}</span> 
                                                     <br /><br />
@@ -263,15 +275,15 @@
                         <div class="col s12 m12 l12">
                             <div class="card-panel white">
                                 <ul class="collection" v-for="(r,i) in [1,2,3,4,5]" v-bind:key="i">
-                                    <li :class="{'collection-item avatar':true,'green' : i == 0}">
-                                        <i class="material-icons circle green">group</i>
+                                    <li class="collection-item avatar" :style="{'border-style': 'solid','border-color': i == 0 ? 'green' : 'white'}">
+                                        <i class="material-icons circle green">account_circle</i>
                                         <span class="title">
-                                            <span v-show="localizeCheck('ind')">Player</span>
-                                            <span v-show="localizeCheck('en')">Player</span>
+                                            <span v-show="langCheck('ind')">Player</span>
+                                            <span v-show="langCheck('en')">Player</span>
                                         {{ r }}</span>
-                                            
+                                        <p>Total : 10 + 8  <br /><br /> </p>     
                                         <div class="row">  
-                                            <div v-for="(c,ic) in ['A','1','2','3','1','2','3','1','2','3','J','Q','K']" v-bind:key="ic" class="col s1 m1 l1 card-panel z-depth-3" :class="{'white': ic % 2 == 0,'grey lighten-1': ic % 2 != 0}" :style="{'width': '90px','margin-left':  ic > 1 ? '-50px' : '15px'}">
+                                            <div v-for="(c,ic) in ['A','1','2','3','4','5','6','7','8','9','10','J','Q','K']" v-bind:key="ic" class="col s1 m1 l1 card-panel z-depth-3 remi-card" :class="{'white': ic % 2 == 0,'grey lighten-1': ic % 2 != 0}" style="width: 90px;margin-left:-50px;float:left;">
                                                 <span class="black-text" v-show="ic % 2 == 0">
                                                     <span class="left">{{ c }}</span> 
                                                     <br /><br />
@@ -292,6 +304,20 @@
                                                 </span>
                                             </div>
                                         </div>
+                                        <div class="row">
+                                            <div class="col s12 s8 l6 hide-on-small-only" v-show="i == 0">
+                                                <br />
+                                                <a class="waves-effect waves-light btn-small green white-text" style="text-transform: none;">
+                                                    <span v-show="langCheck('ind')">Minta Kartu!</span>
+                                                    <span v-show="langCheck('en')">Hit Me!</span>
+                                                </a>
+                                                <a class="waves-effect waves-light btn-small white green-text" style="text-transform: none;">
+                                                    <span v-show="langCheck('ind')">Aku Tinggal!</span>
+                                                    <span v-show="langCheck('en')">I'am Stay!</span>
+                                                </a>
+                                            </div>
+                                            <div class="col s4 l6"></div> 
+                                        </div> 
                                     </li>
                                 </ul>
                             </div>
@@ -299,10 +325,11 @@
                     </div>
                 </div>
             </div>
-            
-            <br /> <br /> <br /> <br />
-            <br /> <br /> <br /> <br />
 
+            <br /> <br /> <br /> <br />
+            <br /> <br /> <br /> <br />
+            <br /> <br /> <br /> <br />
+            <br /> <br /> <br /> <br />
         </div>
 
     </div>
@@ -323,6 +350,8 @@
 	const LOBBY_EVENT_ON_JOIN         = "LOBBY_EVENT_ON_PLAYER_JOIN"
 	const LOBBY_EVENT_ON_DISCONNECTED = "LOBBY_EVENT_ON_PLAYER_DISCONNECTED"
 	const LOBBY_EVENT_ON_LOGOUT       = "LOBBY_EVENT_ON_PLAYER_LOGOUT"
+    const ROOM_EVENT_ON_JOIN          = "ROOM_EVENT_ON_PLAYER_JOIN"
+	const ROOM_EVENT_ON_DISCONNECTED  = "ROOM_EVENT_ON_PLAYER_DISCONNECTED"
 
     new Vue({
         el: '#app',
@@ -341,6 +370,7 @@
                     players : [],
                 },
                 lobby_ws : null,
+                room_ws : null,
                 is_online : true,
                 is_loading : false,
                 host : {
@@ -360,14 +390,13 @@
         mounted () {
             window.$('.dropdown-trigger').dropdown()
             window.$('.modal').modal()
-            this.initPlayer()
-            
+            this.initPlayer()        
         },
         computed : {
             getPageName(){
                 let param = new URLSearchParams(window.location.search)
                 let name = param.get('page')
-                return name ? name : "room-page"
+                return name ? name : "login-page"
             },
         },
         methods : {
@@ -407,7 +436,9 @@
                             return
                         }
                         this.player = response.data.result
-                        this.initLobbyWs()
+                        if (param.get('page') == 'main-page'){
+                            this.initLobbyWs()
+                        }                       
                     })
                     .catch(e => {
                         console.log(e)
@@ -437,6 +468,20 @@
                         this.is_loading = false
                     })
             },
+            getRoom(roomId){
+                axios.get(this.baseUrl() + "room",JSON.stringify({id:roomId}))
+                    .then(response => {
+                        this.is_loading = false
+                        if (response.data.status == 404) {
+                            window.M.toast({html: '<b>Room Not Found!</b>', classes: 'white green-text'})
+                            return
+                        }
+                        this.room = response.data.result
+                    })
+                    .catch(e => {
+                        console.log(e)
+                    })
+            },
             getRooms(){
                 axios.get(this.baseUrl() + "rooms")
                     .then(response => {
@@ -460,8 +505,35 @@
                         default: break;
                     }
                 }
-                this.getPlayers()
-                this.getRooms()
+                this.lobby_ws.onopen = () => {
+                    this.getPlayers()
+                    this.getRooms()                     
+                }
+                this.lobby_ws.onerror = (e) => {
+                    console.log(e)
+                }
+            },
+            initRoomWs(idRoom){
+                
+                this.room_ws = new WebSocket("ws://" + this.host.name + ":" + this.host.port + "/ws-room?id-player=" + this.player.id + "&id-room=" + idRoom)
+                this.room_ws.onmessage = (evt) => {
+                    let event = JSON.parse(evt.data)
+                    switch (event.name) {
+                        case ROOM_EVENT_ON_JOIN: case ROOM_EVENT_ON_DISCONNECTED:
+                        this.getRoom(idRoom)
+                            break;
+                        default: break;
+                    }
+                }
+                this.room_ws.onopen = () => {
+                    this.switchPage('room-page')
+                };
+                this.room_ws.onclose = () => {
+                     
+                };
+                this.room_ws.onerror = (e) => {
+                    console.log(e)
+                };
             },
             switchPage(name){
                 if ('URLSearchParams' in window) {
@@ -470,17 +542,17 @@
                     window.location.search = searchParams.toString();
                 }
             },
-            switchLocalize(lang){
+            switchLang(lang){
                 if ('URLSearchParams' in window) {
                     var searchParams = new URLSearchParams(window.location.search);
-                    searchParams.set('loc', name);
+                    searchParams.set('lang', name);
                     window.location.search = searchParams.toString();
                 }
             },
-            localizeCheck(lang){
+            langCheck(lang){
                 let def = "ind"
                 let param = new URLSearchParams(window.location.search)
-                let name = param.get('loc')
+                let name = param.get('lang')
                 return name ? (name == lang) : (def == lang)
             },
             backPress(){

@@ -44,6 +44,7 @@ var rootCmd = &cobra.Command{
 		r.HandleFunc("/delroom", routerHub.HandleRemoveRoom)
 
 		r.HandleFunc("/ws-lobby", routerHub.HandleStreamLobby)
+		r.HandleFunc("/ws-room", routerHub.HandleStreamRoom)
 		r.PathPrefix("/").Handler(routerHub.HandleIndex(http.FileServer(http.Dir("./files/"))))
 
 		r.NotFoundHandler = r.NewRoute().HandlerFunc(func(w http.ResponseWriter, r *http.Request) {

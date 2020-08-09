@@ -4,6 +4,15 @@
     border: 15px solid orange
 }
 
+.remi-card {
+    margin-top: 0px;
+    transition: 0.15s all ease;
+}
+
+.remi-card:hover{
+    transform: scale(1.2);
+    transition: 0.15s all ease;
+}
 
 #bg {
     position: fixed;

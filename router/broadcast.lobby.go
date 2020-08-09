@@ -33,7 +33,12 @@ func (h *RouterHub) setPlayerOnlineStatus(id string, isOnline bool) {
 	}
 	h.ConnectionMx.Unlock()
 
-	h.Lobbies.EventBroadcast <- model.EventData{Name: model.LOBBY_EVENT_ON_DISCONNECTED}
+	e := model.LOBBY_EVENT_ON_DISCONNECTED
+	if isOnline {
+		e = model.LOBBY_EVENT_ON_JOIN
+	}
+
+	h.Lobbies.EventBroadcast <- model.EventData{Name: e}
 }
 
 func (h *LobbiesHub) receiveBroadcastsEvent(ctx context.Context, wsconn *websocket.Conn, id string) {

@@ -76,6 +76,12 @@ func (h *RoomsHub) receiveBroadcastsEvent(ctx context.Context, wsconn *websocket
 }
 
 func (h *RouterHub) createRoomHub(room model.Room) *RoomsHub {
+
+	timeSet := time.Now().Local()
+	timeExp := timeSet.Add(time.Hour*time.Duration(0) +
+		time.Minute*time.Duration(h.Config.RoomSessionTime) +
+		time.Second*time.Duration(0))
+
 	r := &RoomsHub{
 		ConnectionMx: sync.RWMutex{},
 		Room:         room,
@@ -87,6 +93,7 @@ func (h *RouterHub) createRoomHub(room model.Room) *RoomsHub {
 		},
 		RoomPlayers:     make(map[string]*model.RoomPlayer),
 		Cards:           make(map[string]*model.Card),
+		SessionExpired:  timeExp,
 		RoomPlayersConn: make(map[string]chan model.RoomEventData),
 		EventBroadcast:  make(chan model.RoomEventData),
 	}

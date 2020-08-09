@@ -107,9 +107,11 @@ func init() {
 
 func initRouterHub() {
 	routerHub = router.NewRouterHub(model.GameConfig{
-		MaxPlayer:    viper.GetInt("game.player"),
-		MaxRoom:      viper.GetInt("game.room"),
-		StarterMoney: viper.GetInt("game.money"),
+		MaxPlayer:         viper.GetInt("game.player"),
+		MaxRoom:           viper.GetInt("game.room"),
+		StarterMoney:      viper.GetInt("game.money"),
+		PlayerSessionTime: viper.GetInt("game.player_session"),
+		RoomSessionTime:   viper.GetInt("game.room_session"),
 	})
 }
 

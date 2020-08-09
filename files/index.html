@@ -111,7 +111,7 @@
                 </div>
             </div>
         </div>
-        <!---------DASHBOARD PAGE---------->
+        <!---------LOBBY PAGE---------->
         <div v-show="getPageName == 'main-page'">
 
             <div class="container">
@@ -196,6 +196,114 @@
                 </div>
             </div>
         </div>
+        <!---------ROOM PAGE---------->
+        <div v-show="getPageName == 'room-page'">
+            <div class="row">
+                <div class="col m3 l3 hide-on-small-only">
+                    <div class="card-panel white">
+                        <h6 class="green-text">
+                            <span v-show="localizeCheck('ind')">Pemain</span>
+                            <span v-show="localizeCheck('en')">Players</span>
+                        </h6>
+                        <ul class="collection" v-for="p in [1,2,3,4]" v-bind:key="p">
+                            <li class="collection-item avatar">
+                                <i class="material-icons circle green">account_circle</i>
+                                <span class="title">
+                                   Player {{ p }} 
+                                </span>
+                                <p> Joined </p>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+                <div class="col s12 m9 l9">
+                    <div class="row">
+                        <div class="col s12 m12 l12">
+                            <div class="card-panel white">
+                                <h6 class="green-text">
+                                    <span v-show="localizeCheck('ind')"> Nama ruangan </span>
+                                    <span v-show="localizeCheck('en')">Room Name </span>
+                                </h6>
+                                <ul class="collection">
+                                    <li class="collection-item avatar">
+                                        <i class="material-icons circle green">group</i>
+                                        <span class="title">
+                                            <span v-show="localizeCheck('ind')">Dealer</span>
+                                            <span v-show="localizeCheck('en')">Dealer</span>
+                                        </span>  
+                                        <div class="row">  
+                                            <div v-for="(c,ic) in ['A','1','2','3','1','2','3','1','2','3','J','Q','K']" v-bind:key="ic" class="col s1 m1 l1 card-panel z-depth-3" :class="{'white': ic % 2 == 0,'grey lighten-1': ic % 2 != 0}" :style="{'width': '90px','margin-left':  ic > 1 ? '-50px' : '15px'}">
+                                                <span class="black-text" v-show="ic % 2 == 0">
+                                                    <span class="left">{{ c }}</span> 
+                                                    <br /><br />
+                                                    <div class="row">
+                                                        <span class="col s4 offset-s4">{{ c }}</span>
+                                                    </div>
+                                                    <br /> 
+                                                    <span class="right">{{ c }}</span>
+                                                </span>
+                                                <span class="white-text" v-show="ic % 2 != 0">
+                                                    <span class="left">  ? </span> 
+                                                    <br /><br />
+                                                    <div class="row">
+                                                        <span class="col s4 offset-s4"> ? </span>
+                                                    </div>
+                                                    <br /> 
+                                                    <span class="right"> ? </span>
+                                                </span>
+                                            </div>
+                                        </div>
+                                    </li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+        
+                    <div class="row">
+                        <div class="col s12 m12 l12">
+                            <div class="card-panel white">
+                                <ul class="collection" v-for="(r,i) in [1,2,3,4,5]" v-bind:key="i">
+                                    <li :class="{'collection-item avatar':true,'green' : i == 0}">
+                                        <i class="material-icons circle green">group</i>
+                                        <span class="title">
+                                            <span v-show="localizeCheck('ind')">Player</span>
+                                            <span v-show="localizeCheck('en')">Player</span>
+                                        {{ r }}</span>
+                                            
+                                        <div class="row">  
+                                            <div v-for="(c,ic) in ['A','1','2','3','1','2','3','1','2','3','J','Q','K']" v-bind:key="ic" class="col s1 m1 l1 card-panel z-depth-3" :class="{'white': ic % 2 == 0,'grey lighten-1': ic % 2 != 0}" :style="{'width': '90px','margin-left':  ic > 1 ? '-50px' : '15px'}">
+                                                <span class="black-text" v-show="ic % 2 == 0">
+                                                    <span class="left">{{ c }}</span> 
+                                                    <br /><br />
+                                                    <div class="row">
+                                                        <span class="col s4 offset-s4">{{ c }}</span>
+                                                    </div>
+                                                    <br /> 
+                                                    <span class="right">{{ c }}</span>
+                                                </span>
+                                                <span class="white-text" v-show="ic % 2 != 0">
+                                                    <span class="left">  ? </span> 
+                                                    <br /><br />
+                                                    <div class="row">
+                                                        <span class="col s4 offset-s4"> ? </span>
+                                                    </div>
+                                                    <br /> 
+                                                    <span class="right"> ? </span>
+                                                </span>
+                                            </div>
+                                        </div>
+                                    </li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <br /> <br /> <br /> <br />
+            <br /> <br /> <br /> <br />
+
+        </div>
 
     </div>
     <!-- built files will be auto injected -->
@@ -259,7 +367,7 @@
             getPageName(){
                 let param = new URLSearchParams(window.location.search)
                 let name = param.get('page')
-                return name ? name : "login-page"
+                return name ? name : "room-page"
             },
         },
         methods : {

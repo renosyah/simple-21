@@ -25,12 +25,14 @@ type (
 		Room model.Room
 
 		// data in room
-		TurnPost    int
-		TurnsOrder  []string
-		Round       int
-		Dealer      *model.RoomPlayer
-		RoomPlayers map[string]*model.RoomPlayer
-		Cards       map[string]*model.Card
+		TurnPost       int
+		TurnsOrder     []string
+		Round          int
+		Status         int
+		Dealer         *model.RoomPlayer
+		RoomPlayers    map[string]*model.RoomPlayer
+		Cards          map[string]*model.Card
+		SessionExpired time.Time
 
 		// event in room
 		RoomPlayersConn map[string]chan model.RoomEventData
@@ -90,31 +92,4 @@ func NewRouterHub(cfg model.GameConfig) *RouterHub {
 	go h.dropEmptyRoom()
 
 	return h
-}
-
-func (h *RouterHub) dropOffPlayer() {
-	for {
-		h.ConnectionMx.Lock()
-		for _, p := range h.Players {
-			if _, ok := h.Lobbies.PlayersConn[p.ID]; !ok {
-				delete(h.Players, p.ID)
-				h.Lobbies.EventBroadcast <- model.EventData{Name: model.LOBBY_EVENT_ON_LOGOUT}
-				break
-			}
-		}
-		h.ConnectionMx.Unlock()
-		time.Sleep(5 * time.Second)
-	}
-}
-
-func (h *RouterHub) dropEmptyRoom() {
-	for {
-		for id, room := range h.Rooms {
-			if len(room.RoomPlayers) == 0 {
-				h.Rooms[id].EventBroadcast <- model.RoomEventData{Status: ROOM_STATUS_NOT_USE}
-				break
-			}
-		}
-		time.Sleep(5 * time.Second)
-	}
 }

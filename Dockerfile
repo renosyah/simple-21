@@ -14,7 +14,6 @@ RUN rm -rf /util
 RUN rm -rf /sql
 RUN rm .dockerignore
 RUN rm .gitignore
-RUN rm .server.toml
 RUN rm Dockerfile
 RUN rm go.mod
 RUN rm go.sum
@@ -22,5 +21,5 @@ RUN rm heroku.yml
 RUN rm main.go
 EXPOSE 8000
 EXPOSE 80
-CMD ./main --config=.heroku.toml
+CMD ./main --config=.server.toml
 MAINTAINER syahputrareno975@gmail.com

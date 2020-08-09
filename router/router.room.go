@@ -1,6 +1,7 @@
 package router
 
 import (
+	"fmt"
 	"net/http"
 	"sort"
 
@@ -14,6 +15,7 @@ func (h *RouterHub) HandleAddRoom(w http.ResponseWriter, r *http.Request) {
 	err := ParseBodyData(r.Context(), r, &param)
 	if err != nil {
 		w.WriteHeader(http.StatusBadRequest)
+		fmt.Println(err)
 		return
 	}
 
@@ -21,9 +23,6 @@ func (h *RouterHub) HandleAddRoom(w http.ResponseWriter, r *http.Request) {
 		api.HttpResponseException(w, r, http.StatusInsufficientStorage)
 		return
 	}
-
-	h.ConnectionMx.Lock()
-	defer h.ConnectionMx.Unlock()
 
 	h.openRoom(param.HostID, param.Name, param.Players)
 

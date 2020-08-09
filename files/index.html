@@ -68,6 +68,60 @@
             </div>
         </div>
 
+        <!---------MODAL CREATE ROOM---------->
+        <div id="modal-create-room" class="modal modal-fixed-footer modal-fixed-header">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="center green-text">
+                        <br />
+                        <span v-show="langCheck('ind')">Buat Ruangan</span>
+                        <span v-show="langCheck('en')">Create Room</span>
+                    </h5>
+                </div>
+                <div class="card-content">
+                    <div class="input-field">
+                        <input id="roomname" type="text" class="validate" v-model="add_room.name">
+                        <label for="roomname">
+                            <span v-show="langCheck('ind')">Nama Ruangan</span>
+                            <span v-show="langCheck('en')">Room Name</span>
+                        </label>
+                    </div>
+                    <div class="card-panel white">
+                        <h6 class="green-text">
+                            <span v-show="langCheck('ind')">Pemain ({{ players.length }})</span>
+                            <span v-show="langCheck('en')">Players ({{ players.length }})</span>
+                        </h6>
+                        <p v-show="players.length <= 1">-                                         
+                            <span v-show="langCheck('ind')">Tidak Ada Pemain Lain</span>
+                            <span v-show="langCheck('en')">No Other Player Online</span> 
+                        -</p>
+                        <ul class="collection" v-for="p in players" v-bind:key="p.id" v-show="p.id != player.id">
+                            <li class="collection-item avatar">
+                                <i class="material-icons circle green">account_circle</i>
+                                <span class="title">
+                                    {{ p.name }} 
+                                </span>
+                                <br />
+                                <i :class="{'material-icons':true,'red-text':!p.is_online,'green-text':p.is_online}">{{ p.is_online ? "link" : "link_off" }}</i>
+                                </p>
+                                <a class="secondary-content">
+                                    <a style="cursor: pointer;" class="secondary-content"  @click="add_room.players.push(p)"  v-show="!add_room.players.includes(p)"><i class="material-icons green-text">send</i></a>
+                                </a>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <a class="modal-close waves-effect waves-light btn-medium btn green white-text" style="text-transform:none;width: 100%;" @click="addRoom(player.id)">
+                    <b>
+                        <span v-show="langCheck('ind')">Buat</span>
+                        <span v-show="langCheck('en')">Create</span>
+                    </b>    
+                </a>
+            </div>
+        </div>
+
         <!---------SIGN IN PAGE---------->
         <div v-show="getPageName == 'login-page'">
 
@@ -128,7 +182,7 @@
                             <div class="row">
                                 <div class="center col s6 s6 l6">
                                     <br />
-                                    <a class="col s12 waves-effect waves-light btn-large green white-text">
+                                    <a class="col s12 waves-effect waves-light btn-large green white-text modal-trigger" data-target="modal-create-room">
                                         <span v-show="langCheck('ind')">Buat Ruangan</span>
                                         <span v-show="langCheck('en')">Create Room</span>
                                     </a>
@@ -188,7 +242,7 @@
                                         <span v-show="langCheck('en')">Room</span>
                                     {{ r.name }}</span>
                                     <p> </p>
-                                    <a class="secondary-content" @click="initRoomWs(r.id)"><i class="material-icons">arrow_forward</i></a>
+                                    <a style="cursor: pointer;" class="secondary-content" @click="initRoomWs(r.id)"><i class="material-icons">arrow_forward</i></a>
                                 </li>
                             </ul>
                         </div>
@@ -369,6 +423,11 @@
                     name : "",
                     players : [],
                 },
+                add_room : {
+                    host_id:"",
+                    name:"",
+                    players:[]
+                },
                 lobby_ws : null,
                 room_ws : null,
                 is_online : true,
@@ -468,10 +527,25 @@
                         this.is_loading = false
                     })
             },
+            addRoom(ownerID){
+                this.add_room.ownerID = ownerID
+                this.is_loading = true
+                axios.post(this.baseUrl() + "addroom",JSON.stringify(this.add_room))
+                    .then(response => {
+                        this.is_loading = false
+                        if (response.data.status != 200) {
+                            window.M.toast({html: '<b>Failed Create Room!</b>', classes: 'white green-text'})
+                            return
+                        }
+                    })
+                    .catch(e => {
+                        this.is_loading = false
+                        console.log(e)
+                    })
+            },
             getRoom(roomId){
                 axios.get(this.baseUrl() + "room",JSON.stringify({id:roomId}))
                     .then(response => {
-                        this.is_loading = false
                         if (response.data.status == 404) {
                             window.M.toast({html: '<b>Room Not Found!</b>', classes: 'white green-text'})
                             return

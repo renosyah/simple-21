@@ -9,8 +9,14 @@ import (
 
 	"github.com/asaskevich/govalidator"
 	"github.com/pkg/errors"
+	"github.com/renosyah/simple-21/api"
 	"github.com/renosyah/simple-21/model"
+	"github.com/renosyah/simple-21/util"
 )
+
+func HandleGetRandomName(w http.ResponseWriter, r *http.Request) {
+	api.HttpResponse(w, r, util.GenerateRandomName(), http.StatusOK)
+}
 
 func (h *RouterHub) dropOffPlayer() {
 	for {

@@ -21,6 +21,7 @@ func (h *RouterHub) openRoom(pHostID, name string, player []model.Player) {
 			ID:       p.ID,
 			Name:     p.Name,
 			Status:   model.PLAYER_STATUS_INVITED,
+			Cards:    []model.Card{},
 			IsOnline: true,
 		})
 	}
@@ -104,7 +105,7 @@ func (h *RouterHub) createRoomHub(room model.Room) *RoomsHub {
 	}
 
 	for _, p := range room.Players {
-		r.RoomPlayers[p.ID] = &model.RoomPlayer{ID: p.ID, Name: p.Name}
+		r.RoomPlayers[p.ID] = &model.RoomPlayer{ID: p.ID, Name: p.Name, Cards: []model.Card{}}
 		r.TurnsOrder = append(r.TurnsOrder, p.ID)
 	}
 

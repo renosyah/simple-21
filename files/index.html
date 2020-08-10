@@ -79,12 +79,19 @@
                     </h5>
                 </div>
                 <div class="card-content">
-                    <div class="input-field">
-                        <input id="roomname" type="text" class="validate" v-model="add_room.name">
-                        <label for="roomname">
-                            <span v-show="langCheck('ind')">Nama Ruangan</span>
-                            <span v-show="langCheck('en')">Room Name</span>
-                        </label>
+                    <div class="row">
+                        <div class="col s10 m10 l10">
+                            <div class="input-field">
+                                <input id="roomname" type="text" class="validate" v-model="add_room.name" :placeholder="add_room.name">
+                                <label for="roomname">
+                                    <span v-show="langCheck('ind')">Nama Ruangan</span>
+                                    <span v-show="langCheck('en')">Room Name</span>
+                                </label>   
+                            </div>
+                        </div>
+                        <div class="col s2 m2 l2">
+                            <a style="cursor: pointer;" @click="randomName();add_room.name = random_name"><i class="medium material-icons green-text">casino</i></a>
+                        </div>
                     </div>
                     <div class="card-panel white">
                         <h6 class="green-text">
@@ -143,12 +150,20 @@
                                 <div class="card-image">
                                 </div>
                                 <div class="card-content">
-                                    <div class="input-field">
-                                        <input id="fullname" type="text" class="validate" v-model="player.name">
-                                        <label for="fullname">
-                                            <span v-show="langCheck('ind')">Nama Pemain</span>
-                                            <span v-show="langCheck('en')">Player Name</span>
-                                        </label>
+                                    <div class="row">
+                                        <div class="col s10 m10 l10">
+                                            <div class="input-field">
+                                                <input id="fullname" type="text" class="validate" v-model="player.name" :placeholder="player.name">
+                                                <label for="fullname">
+                                                    <span v-show="langCheck('ind')">Nama Pemain</span>
+                                                    <span v-show="langCheck('en')">Player Name</span>
+                                                </label>
+                                            </div>
+                                        </div>
+                                        <div class="col s2 m2 l2">
+                                            <br />
+                                            <a style="cursor: pointer;" @click="randomName();player.name = random_name"><i class="small material-icons green-text">casino</i></a>
+                                        </div>
                                     </div>
                                 </div>
                                 <div class="center card-action">
@@ -338,7 +353,11 @@
                                     <li class="collection-item avatar" :style="{'border-style': 'solid','border-color': r.status == 3 ? 'green' : 'white'}">
                                         <i class="material-icons circle green">account_circle</i>
                                         <span class="title">{{ r.name }}</span>
-                                        <p>Total : {{ r.total_show }} <br /><br /> </p>     
+                                        <p>Total : {{ r.total_show }} <br /><br /> </p>
+                                        <p v-show="r.cards.length == 0">
+                                            <span v-show="langCheck('ind')">- Tidak Ada Kartu -</span>
+                                            <span v-show="langCheck('en')">- No Cards -</span>
+                                        </p>     
                                         <div class="row">  
                                             <div v-for="(c,ic) in r.cards" v-bind:key="ic" class="col s1 m1 l1 card-panel z-depth-3 remi-card" :class="{'white': c.show,'grey lighten-1': !c.show}" style="width: 90px;margin-left:-50px;float:left;">
                                                 <span class="black-text" v-show="c.show">
@@ -408,6 +427,11 @@
     const LOBBY_EVENT_ON_ROOM_CREATED = "LOBBY_EVENT_ON_ROOM_CREATED"
 	const LOBBY_EVENT_ON_ROOM_REMOVE  = "LOBBY_EVENT_ON_ROOM_REMOVED"
 
+    // FOR ROOM STATUS
+    const ROOM_STATUS_USE     = 0
+    const ROOM_STATUS_ON_PLAY = 1
+    const ROOM_STATUS_NOT_USE = 2
+
     new Vue({
         el: '#app',
         data() {
@@ -432,6 +456,7 @@
                         status :0
                     },
                     players : [],
+                    status : 0,
                 },
                 add_room : {
                     host_id:"",
@@ -446,7 +471,8 @@
                     name : "",
                     protocol : "",
                     port : ""
-                }
+                },
+                random_name :"",
             }
         },
         created(){
@@ -459,14 +485,15 @@
         mounted () {
             window.$('.dropdown-trigger').dropdown()
             window.$('.modal').modal()
-            this.initPlayer()        
+            this.initPlayer()  
+            this.randomName()      
         },
         computed : {
             getPageName(){
                 let param = new URLSearchParams(window.location.search)
                 let name = param.get('page')
                 return name ? name : "login-page"
-            },
+            }
         },
         methods : {
             addPlayer(){
@@ -569,6 +596,7 @@
                             window.M.toast({html: '<b>Room Not Found!</b>', classes: 'white green-text'})
                             return
                         }
+                        console.log(response.data.result.players)
                         this.room = response.data.result
                     })
                     .catch(e => {
@@ -588,7 +616,6 @@
                 this.is_loading = true
                 axios.post(this.baseUrl() + "delroom",JSON.stringify({id:roomId, player_id:this.player.id}))
                     .then(response => {
-                        console.log(response)
                         this.is_loading = false
                         if (response.data.status != 200) {
                             window.M.toast({html: '<b>Failed Delete Room!</b>', classes: 'white green-text'})
@@ -662,6 +689,15 @@
                 this.room_ws.onerror = (e) => {
                     console.log(e)
                 };
+            },
+            randomName(){
+                axios.get(this.baseUrl() + "random-name")
+                    .then(response => {
+                        this.random_name = response.data.result
+                    })
+                    .catch(e => {
+                        console.log(e)
+                    })
             },
             toRoom(idRoom){
                 if ('URLSearchParams' in window) {

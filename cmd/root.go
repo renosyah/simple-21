@@ -43,6 +43,8 @@ var rootCmd = &cobra.Command{
 		r.HandleFunc("/rooms", routerHub.HandleListRoom)
 		r.HandleFunc("/delroom", routerHub.HandleRemoveRoom)
 
+		r.HandleFunc("/random-name", router.HandleGetRandomName)
+
 		r.HandleFunc("/ws-lobby", routerHub.HandleStreamLobby)
 		r.HandleFunc("/ws-room", routerHub.HandleStreamRoom)
 		r.PathPrefix("/").Handler(routerHub.HandleIndex(http.FileServer(http.Dir("./files/"))))

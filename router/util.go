@@ -32,7 +32,7 @@ func (h *RouterHub) dropEmptyRoom() {
 	for {
 		for id, room := range h.Rooms {
 			if len(room.RoomPlayers) == 0 && time.Now().Local().After(room.SessionExpired) {
-				h.Rooms[id].EventBroadcast <- model.RoomEventData{Status: ROOM_STATUS_NOT_USE}
+				h.Rooms[id].EventBroadcast <- model.RoomEventData{Status: model.ROOM_STATUS_NOT_USE}
 				break
 			}
 		}

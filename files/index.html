@@ -114,7 +114,7 @@
                 </div>
             </div>
             <div class="modal-footer">
-                <a class="modal-close waves-effect waves-light btn-medium btn green white-text" style="text-transform:none;width: 100%;" @click="addRoom(player.id)">
+                <a class="modal-close waves-effect waves-light btn-medium btn green white-text" style="text-transform:none;width: 100%;" @click="addRoom">
                     <b>
                         <span v-show="langCheck('ind')">Buat</span>
                         <span v-show="langCheck('en')">Create</span>
@@ -166,6 +166,8 @@
                 </div>
             </div>
         </div>
+
+
         <!---------LOBBY PAGE---------->
         <div v-show="getPageName == 'main-page'">
 
@@ -242,8 +244,12 @@
                                         <span v-show="langCheck('ind')">Ruangan</span>
                                         <span v-show="langCheck('en')">Room</span>
                                     {{ r.name }}</span>
-                                    <p> </p>
-                                    <a style="cursor: pointer;" class="secondary-content" @click="toRoom('room-page',r.id)"><i class="material-icons">arrow_forward</i></a>
+                                    <br /><br />
+                                    <a class="waves-effect waves-light btn-small green white-text" @click="toRoom(r.id)">
+                                        <span v-show="langCheck('ind')">Gabung</span>
+                                        <span v-show="langCheck('en')">Join</span>
+                                    </a>
+                                    <a style="cursor: pointer;" class="secondary-content" @click="deleteRoom(r.id)" v-show="r.removable"><i class="material-icons green-text">delete</i></a>
                                 </li>
                             </ul>
                         </div>
@@ -393,16 +399,14 @@
     <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
     <script>
 
-	// FOR BROADCASTER
-	const LOBBY_EVENT_ROOM_CREATED = "LOBBY_EVENT_ROOM_CREATED"
-	const LOBBY_EVENT_ROOM_REMOVE  = "LOBBY_EVENT_ROOM_REMOVED"
-
 	// FOR BROADCASTER RECEIVER
 	const LOBBY_EVENT_ON_JOIN         = "LOBBY_EVENT_ON_PLAYER_JOIN"
 	const LOBBY_EVENT_ON_DISCONNECTED = "LOBBY_EVENT_ON_PLAYER_DISCONNECTED"
 	const LOBBY_EVENT_ON_LOGOUT       = "LOBBY_EVENT_ON_PLAYER_LOGOUT"
     const ROOM_EVENT_ON_JOIN          = "ROOM_EVENT_ON_PLAYER_JOIN"
 	const ROOM_EVENT_ON_DISCONNECTED  = "ROOM_EVENT_ON_PLAYER_DISCONNECTED"
+    const LOBBY_EVENT_ON_ROOM_CREATED = "LOBBY_EVENT_ON_ROOM_CREATED"
+	const LOBBY_EVENT_ON_ROOM_REMOVE  = "LOBBY_EVENT_ON_ROOM_REMOVED"
 
     new Vue({
         el: '#app',
@@ -535,8 +539,8 @@
                         this.is_loading = false
                     })
             },
-            addRoom(ownerID){
-                this.add_room.ownerID = ownerID
+            addRoom(){
+                this.add_room.host_id = this.player.id
                 this.add_room.players.push(this.player)
                 this.is_loading = true
                 axios.post(this.baseUrl() + "addroom",JSON.stringify(this.add_room))
@@ -572,11 +576,27 @@
                     })
             },
             getRooms(){
-                axios.get(this.baseUrl() + "rooms")
+                axios.get(this.baseUrl() + "rooms" +"?id-player=" + this.player.id)
                     .then(response => {
                         this.rooms = response.data.result
                     })
                     .catch(e => {
+                        console.log(e)
+                    })
+            },
+            deleteRoom(roomId){
+                this.is_loading = true
+                axios.post(this.baseUrl() + "delroom",JSON.stringify({id:roomId, player_id:this.player.id}))
+                    .then(response => {
+                        console.log(response)
+                        this.is_loading = false
+                        if (response.data.status != 200) {
+                            window.M.toast({html: '<b>Failed Delete Room!</b>', classes: 'white green-text'})
+                            return
+                        }
+                    })
+                    .catch(e => {
+                        this.is_loading = false
                         console.log(e)
                     })
             },
@@ -597,11 +617,11 @@
                             window.M.toast({html: '<b>' + event.data.name + ' is Offline!</b>', classes: 'white green-text'})
                             this.getPlayers()
                             break;
-                        case LOBBY_EVENT_ROOM_CREATED:
+                        case LOBBY_EVENT_ON_ROOM_CREATED:
                             window.M.toast({html: '<b>' + event.data.name + ' is Created!</b>', classes: 'white green-text'})
                             this.getRooms()
                             break;
-                         case LOBBY_EVENT_ROOM_REMOVE:
+                         case LOBBY_EVENT_ON_ROOM_REMOVE:
                             window.M.toast({html: '<b>' + event.data.name + ' is Removed!</b>', classes: 'white green-text'})
                             this.getRooms()
                             break;
@@ -617,7 +637,6 @@
                 }
             },
             initRoomWs(idR){
-                
                 let idRoom = idR
                 this.room_ws = new WebSocket("ws://" + this.host.name + ":" + this.host.port + "/ws-room?id-player=" + this.player.id + "&id-room=" + idRoom)
                 this.room_ws.onmessage = (evt) => {
@@ -644,11 +663,11 @@
                     console.log(e)
                 };
             },
-            toRoom(page,idRoom){
+            toRoom(idRoom){
                 if ('URLSearchParams' in window) {
                     var searchParams = new URLSearchParams(window.location.search);
                     searchParams.set('id-room', idRoom);
-                    searchParams.set('page', page);
+                    searchParams.set('page', 'room-page');
                     window.location.search = searchParams.toString();
                 }
             },

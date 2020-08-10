@@ -6,7 +6,7 @@ import (
 	"github.com/renosyah/simple-21/model"
 )
 
-func (h *RouterHub) setPlayerOnlineStatus(player model.Player, isOnline bool) {
+func (h *RouterHub) setPlayerOnlineStatus(player model.Player, isOnline, broadcast bool) {
 
 	timeSet := time.Now().Local()
 	timeExp := timeSet.Add(time.Hour*time.Duration(0) +
@@ -18,7 +18,9 @@ func (h *RouterHub) setPlayerOnlineStatus(player model.Player, isOnline bool) {
 		e = model.LOBBY_EVENT_ON_JOIN
 	}
 
-	h.Lobbies.EventBroadcast <- model.EventData{Name: e, Data: player}
+	if broadcast {
+		h.Lobbies.EventBroadcast <- model.EventData{Name: e, Data: player}
+	}
 
 	h.ConnectionMx.Lock()
 	defer h.ConnectionMx.Unlock()
@@ -33,14 +35,16 @@ func (h *RouterHub) setPlayerOnlineStatus(player model.Player, isOnline bool) {
 	}
 }
 
-func (h *RoomsHub) setPlayerOnlineStatus(player model.Player, isOnline bool) {
+func (h *RoomsHub) setPlayerOnlineStatus(player model.Player, isOnline bool, broadcast bool) {
 
 	e := model.ROOM_EVENT_ON_DISCONNECTED
 	if isOnline {
 		e = model.ROOM_EVENT_ON_JOIN
 	}
 
-	h.EventBroadcast <- model.RoomEventData{Name: e, Data: player}
+	if broadcast {
+		h.EventBroadcast <- model.RoomEventData{Name: e, Data: player}
+	}
 
 	h.ConnectionMx.Lock()
 	defer h.ConnectionMx.Unlock()

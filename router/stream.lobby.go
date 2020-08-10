@@ -23,16 +23,14 @@ func (h *RouterHub) HandleStreamLobby(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	h.Lobbies.EventBroadcast <- model.EventData{Name: model.LOBBY_EVENT_ON_JOIN}
-
 	wsconn, err := upgrader.Upgrade(w, r, nil)
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
 		return
 	}
 
-	h.setPlayerOnlineStatus(*player, true)
-	defer h.setPlayerOnlineStatus(*player, false)
+	h.setPlayerOnlineStatus(*player, true, true)
+	defer h.setPlayerOnlineStatus(*player, false, true)
 	defer wsconn.Close()
 
 	go h.Lobbies.receiveBroadcastsEvent(ctx, wsconn, pID)
@@ -54,9 +52,9 @@ func (h *RouterHub) HandleStreamLobby(w http.ResponseWriter, r *http.Request) {
 			/* this event is for client */
 		case model.LOBBY_EVENT_ON_DISCONNECTED:
 			/* this event is for client */
-		case model.LOBBY_EVENT_ROOM_CREATED:
+		case model.LOBBY_EVENT_ON_ROOM_CREATED:
 			/* this event is for client */
-		case model.LOBBY_EVENT_ROOM_REMOVE:
+		case model.LOBBY_EVENT_ON_ROOM_REMOVE:
 			/* this event is for client */
 		case model.LOBBY_EVENT_ON_LOGOUT:
 			/* this event is for client */

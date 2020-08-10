@@ -30,18 +30,16 @@ func (h *RouterHub) HandleStreamRoom(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	room.EventBroadcast <- model.RoomEventData{Name: model.ROOM_EVENT_ON_JOIN, Data: *player}
-
 	wsconn, err := upgrader.Upgrade(w, r, nil)
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
 		return
 	}
 
-	h.setPlayerOnlineStatus(*player, true)
-	room.setPlayerOnlineStatus(*player, true)
-	defer h.setPlayerOnlineStatus(*player, false)
-	defer room.setPlayerOnlineStatus(*player, false)
+	h.setPlayerOnlineStatus(*player, true, true)
+	room.setPlayerOnlineStatus(*player, true, true)
+	defer h.setPlayerOnlineStatus(*player, false, false)
+	defer room.setPlayerOnlineStatus(*player, false, true)
 	defer wsconn.Close()
 
 	go room.receiveBroadcastsEvent(ctx, wsconn, pID)

@@ -11,11 +11,6 @@ import (
 	uuid "github.com/satori/go.uuid"
 )
 
-const (
-	ROOM_STATUS_USE     = 0
-	ROOM_STATUS_NOT_USE = 1
-)
-
 func (h *RouterHub) openRoom(pHostID, name string, player []model.Player) {
 	h.ConnectionMx.Lock()
 	defer h.ConnectionMx.Unlock()
@@ -123,7 +118,7 @@ func (h *RouterHub) createRoomHub(room model.Room) *RoomsHub {
 			select {
 			case msg := <-r.EventBroadcast:
 				switch msg.Status {
-				case ROOM_STATUS_USE:
+				case model.ROOM_STATUS_USE:
 
 					r.ConnectionMx.RLock()
 					for _, subReceiver := range r.RoomSubscriber {
@@ -134,7 +129,7 @@ func (h *RouterHub) createRoomHub(room model.Room) *RoomsHub {
 					}
 					r.ConnectionMx.RUnlock()
 
-				case ROOM_STATUS_NOT_USE:
+				case model.ROOM_STATUS_NOT_USE:
 
 					h.closeRoom(room.ID)
 					return

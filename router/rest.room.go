@@ -25,7 +25,7 @@ func (h *RouterHub) HandleAddRoom(w http.ResponseWriter, r *http.Request) {
 	h.openRoom(param.HostID, param.Name, param.Players)
 
 	h.Lobbies.EventBroadcast <- model.EventData{
-		Name: model.LOBBY_EVENT_ROOM_CREATED,
+		Name: model.LOBBY_EVENT_ON_ROOM_CREATED,
 		Data: param,
 	}
 
@@ -35,10 +35,13 @@ func (h *RouterHub) HandleAddRoom(w http.ResponseWriter, r *http.Request) {
 func (h *RouterHub) HandleListRoom(w http.ResponseWriter, r *http.Request) {
 	rooms := []model.Room{}
 
+	pID := r.FormValue("id-player")
+
 	for _, r := range h.Rooms {
 		rooms = append(rooms, model.Room{
-			ID:   r.Room.ID,
-			Name: r.Room.Name,
+			ID:        r.Room.ID,
+			Name:      r.Room.Name,
+			Removable: r.Room.OwnerID == pID,
 		})
 	}
 
@@ -74,12 +77,14 @@ func (h *RouterHub) HandleDetailRoom(w http.ResponseWriter, r *http.Request) {
 		return players[i].Name < players[j].Name
 	})
 
-	api.HttpResponse(w, r, model.Room{
+	rm := model.Room{
 		ID:      room.Room.ID,
 		Name:    room.Room.Name,
 		Dealer:  *room.Dealer,
 		Players: players,
-	}, http.StatusOK)
+	}
+
+	api.HttpResponse(w, r, rm, http.StatusOK)
 }
 
 func (h *RouterHub) HandleRemoveRoom(w http.ResponseWriter, r *http.Request) {
@@ -97,15 +102,23 @@ func (h *RouterHub) HandleRemoveRoom(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	cRoom := model.Room{
+		ID:   room.Room.ID,
+		Name: room.Room.Name,
+	}
+
 	if param.PlayerID != room.Room.OwnerID {
 		api.HttpResponseException(w, r, http.StatusForbidden)
 		return
 	}
 
 	room.EventBroadcast <- model.RoomEventData{
-		Name:   model.LOBBY_EVENT_ROOM_REMOVE,
-		Status: ROOM_STATUS_NOT_USE,
-		Data:   param,
+		Status: model.ROOM_STATUS_NOT_USE,
+	}
+
+	h.Lobbies.EventBroadcast <- model.EventData{
+		Name: model.LOBBY_EVENT_ON_ROOM_REMOVE,
+		Data: cRoom,
 	}
 
 	api.HttpResponse(w, r, model.Player{}, http.StatusOK)

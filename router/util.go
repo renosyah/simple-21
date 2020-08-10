@@ -3,6 +3,7 @@ package router
 import (
 	"context"
 	"encoding/json"
+	"fmt"
 	"io/ioutil"
 	"net/http"
 	"time"
@@ -15,7 +16,8 @@ import (
 )
 
 func HandleGetRandomName(w http.ResponseWriter, r *http.Request) {
-	api.HttpResponse(w, r, util.GenerateRandomName(), http.StatusOK)
+	wttl := r.FormValue("title")
+	api.HttpResponse(w, r, util.GenerateRandomName(wttl != ""), http.StatusOK)
 }
 
 func (h *RouterHub) dropOffPlayer() {
@@ -44,6 +46,46 @@ func (h *RouterHub) dropEmptyRoom() {
 		}
 		time.Sleep(5 * time.Second)
 	}
+}
+
+func (r *RoomsHub) givePlayerOneCard(id string, show bool) {
+	r.ConnectionMx.Lock()
+	defer r.ConnectionMx.Unlock()
+
+	if len(r.Cards) <= 0 {
+		return
+	}
+
+	card := model.Card{}
+	for _, c := range r.Cards {
+		card = c.Copy(show)
+		break
+	}
+
+	fmt.Println(string(model.ToJson(card)))
+
+	if _, ok := r.Cards[card.ID]; ok {
+		delete(r.Cards, card.ID)
+	}
+
+	p, ok := r.RoomPlayers[id]
+	if !ok {
+
+		// give it to dealer
+		r.Dealer.Cards = append(r.Dealer.Cards, card)
+		return
+	}
+
+	p.Cards = append(p.Cards, card)
+}
+
+func (r *RoomsHub) isPlayersStatusSame(status int) bool {
+	for _, i := range r.RoomPlayers {
+		if i.Status != status {
+			return false
+		}
+	}
+	return true
 }
 
 func ParseBodyData(ctx context.Context, r *http.Request, data interface{}) error {

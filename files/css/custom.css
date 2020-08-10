@@ -50,7 +50,13 @@
 	bottom: 0;	
 }
 
- 
+.card-bg {
+    background-clip: border-box;
+    background-repeat: no-repeat;
+    background-size: 50%;
+    background-position: center;    
+}
+
 .offline-warning {
     overflow: hidden;
     position: fixed;
@@ -75,4 +81,19 @@
     100% {
         transform: scale(1);
     }
+}
+.range-green[type=range]::-webkit-slider-thumb {
+    background-color: #2BAE66FF;
+}
+.range-green[type=range]::-moz-range-thumb {
+    background-color: #2BAE66FF;
+}
+.range-green[type=range]::-ms-thumb {
+    background-color: #2BAE66FF;
+}
+.range-green[type=range] + .thumb {
+    background-color: #ffffff;
+}
+.range-green[type=range] + .thumb.active .value {
+    color: #2BAE66FF;
 }

@@ -41,6 +41,7 @@ var rootCmd = &cobra.Command{
 		r.HandleFunc("/addroom", routerHub.HandleAddRoom)
 		r.HandleFunc("/room", routerHub.HandleDetailRoom)
 		r.HandleFunc("/room/player", routerHub.HandleDetailRoomPlayer)
+		r.HandleFunc("/room/setbet", routerHub.HandlePlaceBet)
 		r.HandleFunc("/rooms", routerHub.HandleListRoom)
 		r.HandleFunc("/delroom", routerHub.HandleRemoveRoom)
 
@@ -48,7 +49,8 @@ var rootCmd = &cobra.Command{
 
 		r.HandleFunc("/ws-lobby", routerHub.HandleStreamLobby)
 		r.HandleFunc("/ws-room", routerHub.HandleStreamRoom)
-		r.PathPrefix("/").Handler(routerHub.HandleIndex(http.FileServer(http.Dir("./files/"))))
+
+		r.PathPrefix("/").Handler(http.StripPrefix("/", http.FileServer(http.Dir("files"))))
 
 		r.NotFoundHandler = r.NewRoute().HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			http.Redirect(w, r, "/", http.StatusSeeOther)

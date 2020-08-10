@@ -91,7 +91,7 @@
                         </div>
                         <div class="col s2 m2 l2">
                             <br />
-                            <a style="cursor: pointer;" @click="randomName();add_room.name = random_name"><i class="small material-icons green-text">casino</i></a>
+                            <a style="cursor: pointer;" @click="randomName('');add_room.name = random_name"><i class="small material-icons green-text">casino</i></a>
                         </div>
                     </div>
                     <div class="card-panel white">
@@ -163,7 +163,7 @@
                                         </div>
                                         <div class="col s2 m2 l2">
                                             <br />
-                                            <a style="cursor: pointer;" @click="randomName();player.name = random_name"><i class="small material-icons green-text">casino</i></a>
+                                            <a style="cursor: pointer;" @click="randomName('yes');player.name = random_name"><i class="small material-icons green-text">casino</i></a>
                                         </div>
                                     </div>
                                 </div>
@@ -282,8 +282,7 @@
                 <div class="col l3 hide-on-med-and-down">
                     <div class="card-panel white center ">                     
                         <h6 class="green-text">
-                            <span v-show="langCheck('ind')"> Nama ruangan </span>
-                            <span v-show="langCheck('en')">Room Name </span>
+                            {{ room.name }}
                         </h6>
                         <a class="waves-effect waves-light btn-large green white-text" @click="switchPage('main-page')">
                             <span v-show="langCheck('ind')">Keluar Ruangan</span>
@@ -301,9 +300,7 @@
                                 <span class="title">
                                     {{ p.name }}
                                 </span>
-                                <p> Bet : $ {{ p.bet }} <br> 
-                                    Status : {{ p.status }}
-                                </p>
+                                <p>  Status : {{ p.status == 0 ? 'Ready' : p.status == 1 ? 'Playing' : p.status == 2 ? 'Idle' : p.status == 3 ? 'In Turn' : 'Out' }}  </p>
                             </li>
                         </ul>
                     </div>
@@ -312,8 +309,12 @@
                     <div class="row">
                         <div class="col s12 m12 l12">
                             <div class="card-panel white">
+                                <h6 class="green-text">
+                                    <span v-show="langCheck('ind')">DEALER</span>
+                                    <span v-show="langCheck('en')">DEALER</span>
+                                </h6>
                                 <ul class="collection">
-                                    <li class="collection-item avatar">
+                                    <li class="collection-item avatar" :style="{'border-style': 'solid','border-color': room.dealer.status == 3 ? 'green' : 'white'}">
                                         <i class="material-icons circle green">account_circle</i>
                                         <span class="title">
                                             {{ room.dealer.name }}
@@ -321,15 +322,17 @@
                                         <p>Total : {{ room.dealer.total_show }} <br /><br /> </p>  
                                         <div class="row">  
                                             <div v-for="(c,ic) in room.dealer.cards" v-bind:key="ic" class="col s1 m1 l1 card-panel z-depth-2 remi-card" :class="{'white': c.show,'grey lighten-1': !c.show}" style="width: 90px;margin-left:-50px;float:left;">
-                                                <span class="black-text" v-show="c.show">
-                                                    <span class="left">{{ c.label }}</span> 
-                                                    <br /><br />
-                                                    <div class="row">
-                                                        <span class="col s4 offset-s4">{{ c.label }}</span>
-                                                    </div>
-                                                    <br /> 
-                                                    <span class="right">{{ c.label }}</span>
-                                                </span>
+                                                <div class="card-bg" :style="{'background-image': 'url('+ c.image +')'}">
+                                                    <span class="black-text" v-show="c.show">
+                                                        <span class="left">{{ c.label }}</span> 
+                                                        <br /><br />
+                                                        <div class="row">
+                                                            <span class="col s4 offset-s4"> <br /> </span>
+                                                        </div>
+                                                        <br /> 
+                                                        <span class="right">{{ c.label }}</span>
+                                                    </span>
+                                                </div>
                                                 <span class="white-text" v-show="!c.show">
                                                     <span class="left">  ? </span> 
                                                     <br /><br />
@@ -349,26 +352,32 @@
                     <div class="row">
                         <div class="col s12 m12 l12">
                             <div class="card-panel white">
+                                <h6 class="green-text">
+                                    <span v-show="langCheck('ind')">PEMAIN</span>
+                                    <span v-show="langCheck('en')">PLAYER</span>
+                                </h6>
                                 <ul class="collection" v-for="(r,i) in room.players" v-bind:key="i">
                                     <li class="collection-item avatar" :style="{'border-style': 'solid','border-color': r.status == 3 ? 'green' : 'white'}">
                                         <i class="material-icons circle green">account_circle</i>
-                                        <span class="title">{{ r.name }}</span>
-                                        <p>Total : {{ r.total_show }} <br /><br /> </p>
+                                        <span class="title">{{ r.name }} </span>
+                                        <p> Bet : $ {{ r.bet }} &nbsp;&nbsp; Total : {{ r.total_show }}<br /><br /> </p>
                                         <p v-show="r.cards.length == 0">
                                             <span v-show="langCheck('ind')">- Tidak Ada Kartu -</span>
                                             <span v-show="langCheck('en')">- No Cards -</span>
                                         </p>     
                                         <div class="row">  
                                             <div v-for="(c,ic) in r.cards" v-bind:key="ic" class="col s1 m1 l1 card-panel z-depth-3 remi-card" :class="{'white': c.show,'grey lighten-1': !c.show}" style="width: 90px;margin-left:-50px;float:left;">
-                                                <span class="black-text" v-show="c.show">
-                                                    <span class="left">{{ c.label }}</span> 
-                                                    <br /><br />
-                                                    <div class="row">
-                                                        <span class="col s4 offset-s4">{{ c.label }}</span>
-                                                    </div>
-                                                    <br /> 
-                                                    <span class="right">{{ c.label }}</span>
-                                                </span>
+                                                <div class="card-bg" :style="{'background-image': 'url('+ c.image +')'}">
+                                                    <span class="black-text" v-show="c.show">
+                                                        <span class="left">{{ c.label }}</span> 
+                                                        <br /><br />
+                                                        <div class="row">
+                                                            <span class="col s4 offset-s4"><br /> </span>
+                                                        </div>
+                                                        <br /> 
+                                                        <span class="right">{{ c.label }}</span>
+                                                    </span>
+                                                </div>
                                                 <span class="white-text" v-show="!c.show">
                                                     <span class="left">  ? </span> 
                                                     <br /><br />
@@ -386,6 +395,37 @@
                         </div>
                     </div>
                 </div>
+            </div>
+            <div id="modal-room-bet" class="modal bottom-sheet">
+                <div class="center">
+                    <h5 class="green-text">
+                        <span v-show="langCheck('ind')">Masukkan Taruhan Anda</span>
+                        <span v-show="langCheck('en')">Settle Your Bet</span>                    
+                    </h5>
+                    <div class="row">
+                        <div class="col s1 m8 l3"></div>
+                        <div class="center col s10 m8 l6">
+                            <h5 class="red-text">
+                                $ {{ player_in_room.bet }}                  
+                            </h5>
+                            <p class="range-field">
+                                <input class="range-green" type="range" min="50" :max="player.money" v-model="player_in_room.bet" />
+                            </p>
+                        </div>
+                        <div class="col s1 m2 l3"></div>
+                    </div>
+                    <br />
+                    <a class="waves-effect waves-light btn-large green white-text" style="text-transform: none;" :disabled="player_in_room.bet == 0" @click="setBet">
+                        <span v-show="langCheck('ind')">Pasang Taruhan</span>
+                        <span v-show="langCheck('en')">Set Bet</span>
+                    </a>
+                    &nbsp;&nbsp;
+                    <a class="waves-effect waves-light btn-large white green-text" @click="switchPage('main-page')">
+                        <span v-show="langCheck('ind')">Keluar Ruangan</span>
+                        <span v-show="langCheck('en')">Exit Room</span>
+                    </a> 
+                </div>
+                <br /> <br />
             </div>
             <div id="modal-room-action" class="modal bottom-sheet">
                 <div class="center">
@@ -425,10 +465,14 @@
 	const LOBBY_EVENT_ON_JOIN         = "LOBBY_EVENT_ON_PLAYER_JOIN"
 	const LOBBY_EVENT_ON_DISCONNECTED = "LOBBY_EVENT_ON_PLAYER_DISCONNECTED"
 	const LOBBY_EVENT_ON_LOGOUT       = "LOBBY_EVENT_ON_PLAYER_LOGOUT"
+
     const ROOM_EVENT_ON_JOIN          = "ROOM_EVENT_ON_PLAYER_JOIN"
 	const ROOM_EVENT_ON_DISCONNECTED  = "ROOM_EVENT_ON_PLAYER_DISCONNECTED"
     const LOBBY_EVENT_ON_ROOM_CREATED = "LOBBY_EVENT_ON_ROOM_CREATED"
 	const LOBBY_EVENT_ON_ROOM_REMOVE  = "LOBBY_EVENT_ON_ROOM_REMOVED"
+    const ROOM_EVENT_ON_PLAYER_SET_BET  = "ROOM_EVENT_ON_PLAYER_SET_BET"
+	const ROOM_EVENT_ON_GAME_START   = "ROOM_EVENT_ON_GAME_START"
+	const ROOM_EVENT_ON_CARD_GIVEN   = "ROOM_EVENT_ON_CARD_GIVEN"
 
     // FOR ROOM STATUS
     const ROOM_STATUS_USE     = 0
@@ -441,11 +485,12 @@
 
     // FOR ROOM PLAYER STATUS
     const PLAYER_STATUS_INVITED = 0
-    const PLAYER_STATUS_JOIN    = 1
+    const PLAYER_STATUS_SET_BET = 1
     const PLAYER_STATUS_IDLE    = 2
     const PLAYER_STATUS_AT_TURN = 3
-    const PLAYER_STATUS_OUT     = 4
-    const PLAYER_STATUS_BUST    = 5
+    const PLAYER_STATUS_FINISH_TURN = 4
+    const PLAYER_STATUS_OUT     = 5
+    const PLAYER_STATUS_BUST    = 6
 
 
     new Vue({
@@ -477,7 +522,7 @@
                 player_in_room : {
                     id:"",
                     name:"",
-                    bet:0,
+                    bet:50,
                     cards : [],
                     total_show : 0,
                     total : 0,
@@ -511,11 +556,12 @@
             window.$('.dropdown-trigger').dropdown()
             window.$('.modal').modal({opacity:0.1,dismissible: false,preventScrolling:false})
             this.initPlayer()  
-            this.randomName()      
+            this.randomName("yes")      
         },
         watch: {
-            'player_in_room.status' : (val) => {
-                window.$("#modal-room-action").modal(val == 3 ? 'open' : 'close')
+            player_in_room : (val) => {
+                window.$("#modal-room-action").modal(val.status == PLAYER_STATUS_AT_TURN ? 'open' : 'close');
+                window.$("#modal-room-bet").modal(val.status == PLAYER_STATUS_INVITED || val.status == PLAYER_STATUS_IDLE ? 'open' : 'close');
             }
         },
         computed : {
@@ -637,6 +683,7 @@
                 axios.get(this.baseUrl() + "room/player" + "?id-player="+this.player.id + "&id-room="+roomId)
                     .then(response => {
                         if (response.data.status == 404) {
+                            window.M.toast({html: '<b>Player Not Found!</b>', classes: 'white green-text'})
                             return
                         }
                         this.player_in_room = response.data.result
@@ -653,6 +700,21 @@
                     .catch(e => {
                         console.log(e)
                     })
+            },
+            setBet(){
+                this.is_loading = true
+                axios.post(this.baseUrl() + "room/setbet",JSON.stringify({player_id : this.player.id, room_id : this.room.id, bet : parseInt(this.player_in_room.bet)}))
+                    .then(response => {
+                        this.is_loading = false
+                        if (response.data.status == 404) {
+                            window.M.toast({html: '<b>Room Not Found!</b>', classes: 'white green-text'})
+                            return
+                        }
+                    })
+                    .catch(e => {
+                        this.is_loading = false
+                        console.log(e)
+                    })                
             },
             deleteRoom(roomId){
                 this.is_loading = true
@@ -703,6 +765,7 @@
                 }
                 this.lobby_ws.onerror = (e) => {
                     console.log(e)
+                    this.is_online = false
                 }
             },
             initRoomWs(idR){
@@ -713,6 +776,18 @@
                     switch (event.name) {
                         case ROOM_EVENT_ON_JOIN:
                             window.M.toast({html: '<b>' + event.data.name + ' is Join the room!</b>', classes: 'white green-text'})
+                            this.getRoom(idRoom)
+                            break;
+                        case ROOM_EVENT_ON_PLAYER_SET_BET:
+                            window.M.toast({html: '<b>' + event.data.name + ' is Join the room!</b>', classes: 'white green-text'})
+                            this.getRoom(idRoom)
+                            break;
+                        case ROOM_EVENT_ON_GAME_START:
+                            window.M.toast({html: '<b>game is started!</b>', classes: 'white green-text'})
+                            this.getRoom(idRoom)
+                            break;
+                        case ROOM_EVENT_ON_CARD_GIVEN:
+                            window.M.toast({html: '<b>Dealer given card</b>', classes: 'white green-text'})
                             this.getRoom(idRoom)
                             break;
                         case ROOM_EVENT_ON_DISCONNECTED:
@@ -730,10 +805,11 @@
                 };
                 this.room_ws.onerror = (e) => {
                     console.log(e)
+                    this.is_online = false
                 };
             },
-            randomName(){
-                axios.get(this.baseUrl() + "random-name")
+            randomName(title){
+                axios.get(this.baseUrl() + "random-name" + "?title="+title)
                     .then(response => {
                         this.random_name = response.data.result
                     })

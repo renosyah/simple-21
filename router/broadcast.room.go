@@ -8,6 +8,7 @@ import (
 
 	"github.com/gorilla/websocket"
 	"github.com/renosyah/simple-21/model"
+	"github.com/renosyah/simple-21/util"
 	uuid "github.com/satori/go.uuid"
 )
 
@@ -83,6 +84,8 @@ func (h *RoomsHub) receiveBroadcastsEvent(ctx context.Context, wsconn *websocket
 
 func (h *RouterHub) createRoomHub(room model.Room) *RoomsHub {
 
+	cards := model.NewCards()
+
 	timeSet := time.Now().Local()
 	timeExp := timeSet.Add(time.Hour*time.Duration(0) +
 		time.Minute*time.Duration(h.Config.RoomSessionTime) +
@@ -94,8 +97,9 @@ func (h *RouterHub) createRoomHub(room model.Room) *RoomsHub {
 		TurnPost:     0,
 		TurnsOrder:   []string{},
 		Dealer: &model.RoomPlayer{
-			ID:   fmt.Sprint(uuid.NewV4()),
-			Name: fmt.Sprintf("Dealer %s", room.Name),
+			ID:    fmt.Sprint(uuid.NewV4()),
+			Name:  util.GenerateRandomName(true),
+			Cards: []model.Card{},
 		},
 		RoomPlayers:    make(map[string]*model.RoomPlayer),
 		Cards:          make(map[string]*model.Card),
@@ -109,7 +113,6 @@ func (h *RouterHub) createRoomHub(room model.Room) *RoomsHub {
 		r.TurnsOrder = append(r.TurnsOrder, p.ID)
 	}
 
-	cards := model.NewCards()
 	for _, c := range cards {
 		r.Cards[c.ID] = &c
 	}

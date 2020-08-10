@@ -35,15 +35,15 @@ type (
 		SessionExpired time.Time
 
 		// event in room
-		RoomPlayersConn map[string]chan model.RoomEventData
-		EventBroadcast  chan model.RoomEventData
+		RoomSubscriber map[string]chan model.RoomEventData
+		EventBroadcast chan model.RoomEventData
 	}
 
 	LobbiesHub struct {
 		ConnectionMx sync.RWMutex
 
 		// event in lobby
-		PlayersConn    map[string]chan model.EventData
+		Subscriber     map[string]chan model.EventData
 		EventBroadcast chan model.EventData
 	}
 
@@ -59,18 +59,16 @@ type (
 func NewRouterHub(cfg model.GameConfig) *RouterHub {
 	lobHub := &LobbiesHub{
 		ConnectionMx:   sync.RWMutex{},
-		PlayersConn:    make(map[string]chan model.EventData),
+		Subscriber:     make(map[string]chan model.EventData),
 		EventBroadcast: make(chan model.EventData),
 	}
 	go func() {
 		for {
 			msg := <-lobHub.EventBroadcast
 			lobHub.ConnectionMx.RLock()
-			for i, c := range lobHub.PlayersConn {
+			for _, subReceiver := range lobHub.Subscriber {
 				select {
-				case c <- msg:
-				case <-time.After((1 * time.Second)):
-					lobHub.removePlayerConnection(i)
+				case subReceiver <- msg:
 				default:
 				}
 

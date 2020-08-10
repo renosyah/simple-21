@@ -1,7 +1,6 @@
 package router
 
 import (
-	"fmt"
 	"net/http"
 	"sort"
 
@@ -15,7 +14,6 @@ func (h *RouterHub) HandleAddRoom(w http.ResponseWriter, r *http.Request) {
 	err := ParseBodyData(r.Context(), r, &param)
 	if err != nil {
 		w.WriteHeader(http.StatusBadRequest)
-		fmt.Println(err)
 		return
 	}
 
@@ -66,7 +64,22 @@ func (h *RouterHub) HandleDetailRoom(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	api.HttpResponse(w, r, room.Room, http.StatusOK)
+	players := []model.RoomPlayer{}
+
+	for _, p := range room.RoomPlayers {
+		players = append(players, *p)
+	}
+
+	sort.Slice(players, func(i, j int) bool {
+		return players[i].Name < players[j].Name
+	})
+
+	api.HttpResponse(w, r, model.Room{
+		ID:      room.Room.ID,
+		Name:    room.Room.Name,
+		Dealer:  *room.Dealer,
+		Players: players,
+	}, http.StatusOK)
 }
 
 func (h *RouterHub) HandleRemoveRoom(w http.ResponseWriter, r *http.Request) {
@@ -92,7 +105,7 @@ func (h *RouterHub) HandleRemoveRoom(w http.ResponseWriter, r *http.Request) {
 	room.EventBroadcast <- model.RoomEventData{
 		Name:   model.LOBBY_EVENT_ROOM_REMOVE,
 		Status: ROOM_STATUS_NOT_USE,
-		Data:   nil,
+		Data:   param,
 	}
 
 	api.HttpResponse(w, r, model.Player{}, http.StatusOK)

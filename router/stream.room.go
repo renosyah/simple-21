@@ -24,7 +24,13 @@ func (h *RouterHub) HandleStreamRoom(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	room.EventBroadcast <- model.RoomEventData{Name: model.ROOM_EVENT_ON_JOIN}
+	player, ok := h.Players[pID]
+	if !ok {
+		w.WriteHeader(http.StatusNotFound)
+		return
+	}
+
+	room.EventBroadcast <- model.RoomEventData{Name: model.ROOM_EVENT_ON_JOIN, Data: *player}
 
 	wsconn, err := upgrader.Upgrade(w, r, nil)
 	if err != nil {
@@ -32,8 +38,10 @@ func (h *RouterHub) HandleStreamRoom(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	h.setPlayerOnlineStatus(pID, true)
-	defer h.setPlayerOnlineStatus(pID, false)
+	h.setPlayerOnlineStatus(*player, true)
+	room.setPlayerOnlineStatus(*player, true)
+	defer h.setPlayerOnlineStatus(*player, false)
+	defer room.setPlayerOnlineStatus(*player, false)
 	defer wsconn.Close()
 
 	go room.receiveBroadcastsEvent(ctx, wsconn, pID)
@@ -49,7 +57,7 @@ func (h *RouterHub) HandleStreamRoom(w http.ResponseWriter, r *http.Request) {
 			break
 		}
 
-		event := (&model.EventData{}).FromJson(msg)
+		event := (&model.RoomEventData{}).FromJson(msg)
 		switch event.Name {
 		case model.ROOM_EVENT_ON_JOIN:
 			/* this event is for client */

@@ -20,11 +20,21 @@ func (h *RouterHub) openRoom(pHostID, name string, player []model.Player) {
 	h.ConnectionMx.Lock()
 	defer h.ConnectionMx.Unlock()
 
+	roomPLayers := []model.RoomPlayer{}
+	for _, p := range player {
+		roomPLayers = append(roomPLayers, model.RoomPlayer{
+			ID:       p.ID,
+			Name:     p.Name,
+			Status:   model.PLAYER_STATUS_INVITED,
+			IsOnline: true,
+		})
+	}
+
 	room := model.Room{
 		ID:      fmt.Sprint(uuid.NewV4()),
 		OwnerID: pHostID,
 		Name:    name,
-		Players: player,
+		Players: roomPLayers,
 	}
 	hub := h.createRoomHub(room)
 
@@ -40,34 +50,34 @@ func (h *RouterHub) closeRoom(roomID string) {
 	}
 }
 
-func (h *RoomsHub) addPlayerRoomConnection(id string) (stream chan model.RoomEventData) {
+func (h *RoomsHub) subscribeRoom(id string) (stream chan model.RoomEventData) {
 	h.ConnectionMx.Lock()
 	defer h.ConnectionMx.Unlock()
 
 	stream = make(chan model.RoomEventData)
-	h.RoomPlayersConn[id] = stream
+	h.RoomSubscriber[id] = stream
 
 	return
 }
 
-func (h *RoomsHub) removePlayerRoomConnection(id string) {
+func (h *RoomsHub) unSubscribeRoom(id string) {
 	h.ConnectionMx.Lock()
 	defer h.ConnectionMx.Unlock()
-	if _, ok := h.RoomPlayersConn[id]; ok {
-		close(h.RoomPlayersConn[id])
-		delete(h.RoomPlayersConn, id)
+	if _, ok := h.RoomSubscriber[id]; ok {
+		close(h.RoomSubscriber[id])
+		delete(h.RoomSubscriber, id)
 	}
 }
 
 func (h *RoomsHub) receiveBroadcastsEvent(ctx context.Context, wsconn *websocket.Conn, id string) {
-	streamClient := h.addPlayerRoomConnection(id)
-	defer h.removePlayerRoomConnection(id)
+	subReceiver := h.subscribeRoom(id)
+	defer h.unSubscribeRoom(id)
 
 	for {
 		select {
 		case <-ctx.Done():
 			return
-		case msg := <-streamClient:
+		case msg := <-subReceiver:
 			if err := wsconn.WriteMessage(websocket.TextMessage, model.ToJson(msg)); err != nil {
 				return
 			}
@@ -91,11 +101,11 @@ func (h *RouterHub) createRoomHub(room model.Room) *RoomsHub {
 			ID:   fmt.Sprint(uuid.NewV4()),
 			Name: fmt.Sprintf("Dealer %s", room.Name),
 		},
-		RoomPlayers:     make(map[string]*model.RoomPlayer),
-		Cards:           make(map[string]*model.Card),
-		SessionExpired:  timeExp,
-		RoomPlayersConn: make(map[string]chan model.RoomEventData),
-		EventBroadcast:  make(chan model.RoomEventData),
+		RoomPlayers:    make(map[string]*model.RoomPlayer),
+		Cards:          make(map[string]*model.Card),
+		SessionExpired: timeExp,
+		RoomSubscriber: make(map[string]chan model.RoomEventData),
+		EventBroadcast: make(chan model.RoomEventData),
 	}
 
 	for _, p := range room.Players {
@@ -116,11 +126,10 @@ func (h *RouterHub) createRoomHub(room model.Room) *RoomsHub {
 				case ROOM_STATUS_USE:
 
 					r.ConnectionMx.RLock()
-					for i, c := range r.RoomPlayersConn {
+					for _, subReceiver := range r.RoomSubscriber {
 						select {
-						case c <- msg:
-						case <-time.After((1 * time.Second)):
-							r.removePlayerRoomConnection(i)
+						case subReceiver <- msg:
+						default:
 						}
 					}
 					r.ConnectionMx.RUnlock()

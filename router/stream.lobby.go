@@ -17,7 +17,8 @@ func (h *RouterHub) HandleStreamLobby(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if _, ok := h.Players[pID]; !ok {
+	player, ok := h.Players[pID]
+	if !ok {
 		w.WriteHeader(http.StatusNotFound)
 		return
 	}
@@ -30,8 +31,8 @@ func (h *RouterHub) HandleStreamLobby(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	h.setPlayerOnlineStatus(pID, true)
-	defer h.setPlayerOnlineStatus(pID, false)
+	h.setPlayerOnlineStatus(*player, true)
+	defer h.setPlayerOnlineStatus(*player, false)
 	defer wsconn.Close()
 
 	go h.Lobbies.receiveBroadcastsEvent(ctx, wsconn, pID)

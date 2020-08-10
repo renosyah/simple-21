@@ -41,11 +41,6 @@ func (h *RouterHub) HandleAddPlayer(w http.ResponseWriter, r *http.Request) {
 
 	h.Players[param.ID] = &param
 
-	h.Lobbies.EventBroadcast <- model.EventData{
-		Name: model.LOBBY_EVENT_ON_JOIN,
-		Data: param,
-	}
-
 	api.HttpResponse(w, r, param, http.StatusOK)
 }
 

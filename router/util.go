@@ -16,7 +16,7 @@ func (h *RouterHub) dropOffPlayer() {
 	for {
 		h.ConnectionMx.Lock()
 		for k, p := range h.Players {
-			_, ok := h.Lobbies.PlayersConn[k]
+			_, ok := h.Lobbies.Subscriber[k]
 			if !ok && !p.IsOnline && time.Now().Local().After(p.SessionExpired) {
 				delete(h.Players, p.ID)
 				h.Lobbies.EventBroadcast <- model.EventData{Name: model.LOBBY_EVENT_ON_LOGOUT}
@@ -40,7 +40,6 @@ func (h *RouterHub) dropEmptyRoom() {
 	}
 }
 
-// ParseBodyData parse json-formatted request body into given struct.
 func ParseBodyData(ctx context.Context, r *http.Request, data interface{}) error {
 	bBody, err := ioutil.ReadAll(r.Body)
 	if err != nil {

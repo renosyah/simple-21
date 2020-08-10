@@ -7,49 +7,34 @@ import (
 	"github.com/renosyah/simple-21/model"
 )
 
-func (h *LobbiesHub) addPlayerConnection(id string) (stream chan model.EventData) {
+func (h *LobbiesHub) subscribe(id string) (stream chan model.EventData) {
 	h.ConnectionMx.Lock()
 	defer h.ConnectionMx.Unlock()
 
 	stream = make(chan model.EventData)
-	h.PlayersConn[id] = stream
+	h.Subscriber[id] = stream
 
 	return
 }
 
-func (h *LobbiesHub) removePlayerConnection(id string) {
+func (h *LobbiesHub) unSubscribe(id string) {
 	h.ConnectionMx.Lock()
 	defer h.ConnectionMx.Unlock()
-	if _, ok := h.PlayersConn[id]; ok {
-		close(h.PlayersConn[id])
-		delete(h.PlayersConn, id)
+	if _, ok := h.Subscriber[id]; ok {
+		close(h.Subscriber[id])
+		delete(h.Subscriber, id)
 	}
-}
-
-func (h *RouterHub) setPlayerOnlineStatus(id string, isOnline bool) {
-	h.ConnectionMx.Lock()
-	if p, ok := h.Players[id]; ok {
-		p.IsOnline = isOnline
-	}
-	h.ConnectionMx.Unlock()
-
-	e := model.LOBBY_EVENT_ON_DISCONNECTED
-	if isOnline {
-		e = model.LOBBY_EVENT_ON_JOIN
-	}
-
-	h.Lobbies.EventBroadcast <- model.EventData{Name: e}
 }
 
 func (h *LobbiesHub) receiveBroadcastsEvent(ctx context.Context, wsconn *websocket.Conn, id string) {
-	streamClient := h.addPlayerConnection(id)
-	defer h.removePlayerConnection(id)
+	subReceiver := h.subscribe(id)
+	defer h.unSubscribe(id)
 
 	for {
 		select {
 		case <-ctx.Done():
 			return
-		case msg := <-streamClient:
+		case msg := <-subReceiver:
 			if err := wsconn.WriteMessage(websocket.TextMessage, model.ToJson(msg)); err != nil {
 				return
 			}

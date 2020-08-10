@@ -2,10 +2,11 @@ package model
 
 type (
 	Room struct {
-		ID      string   `json:"id"`
-		OwnerID string   `json:"-"`
-		Name    string   `json:"name"`
-		Players []Player `json:"players"`
+		ID      string       `json:"id"`
+		OwnerID string       `json:"-"`
+		Name    string       `json:"name"`
+		Dealer  RoomPlayer   `json:"dealer"`
+		Players []RoomPlayer `json:"players"`
 	}
 	AddRoom struct {
 		HostID  string   `json:"host_id"`

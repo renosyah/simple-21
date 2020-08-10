@@ -90,7 +90,8 @@
                             </div>
                         </div>
                         <div class="col s2 m2 l2">
-                            <a style="cursor: pointer;" @click="randomName();add_room.name = random_name"><i class="medium material-icons green-text">casino</i></a>
+                            <br />
+                            <a style="cursor: pointer;" @click="randomName();add_room.name = random_name"><i class="small material-icons green-text">casino</i></a>
                         </div>
                     </div>
                     <div class="card-panel white">
@@ -344,8 +345,7 @@
                                 </ul>
                             </div>
                         </div>
-                    </div>
-        
+                    </div>        
                     <div class="row">
                         <div class="col s12 m12 l12">
                             <div class="card-panel white">
@@ -379,20 +379,6 @@
                                                     <span class="right"> ? </span>
                                                 </span>
                                             </div>
-                                        </div>
-                                        <div class="row">
-                                            <div class="col s12 s8 l6 hide-on-small-only" v-show="r.id == player.id && r.status != 0">
-                                                <br />
-                                                <a class="waves-effect waves-light btn-small green white-text" style="text-transform: none;">
-                                                    <span v-show="langCheck('ind')">Minta Kartu!</span>
-                                                    <span v-show="langCheck('en')">Hit Me!</span>
-                                                </a>
-                                                <a class="waves-effect waves-light btn-small white green-text" style="text-transform: none;">
-                                                    <span v-show="langCheck('ind')">Aku Tinggal!</span>
-                                                    <span v-show="langCheck('en')">I'am Stay!</span>
-                                                </a>
-                                            </div>
-                                            <div class="col s4 l6"></div> 
                                         </div> 
                                     </li>
                                 </ul>
@@ -401,9 +387,26 @@
                     </div>
                 </div>
             </div>
+            <div id="modal-room-action" class="modal bottom-sheet">
+                <div class="center">
+                    <h5 class="green-text">
+                        <span v-show="langCheck('ind')">Giliran Anda</span>
+                        <span v-show="langCheck('en')">Your Turn</span>                    
+                    </h5>
+                    <a class="waves-effect waves-light btn-large green white-text" style="text-transform: none;">
+                        <span v-show="langCheck('ind')">Minta Kartu!</span>
+                        <span v-show="langCheck('en')">Hit Me!</span>
+                    </a>
+                    &nbsp;&nbsp;
+                    <a class="waves-effect waves-light btn-large white green-text" style="text-transform: none;">
+                        <span v-show="langCheck('ind')">Aku Tinggal!</span>
+                        <span v-show="langCheck('en')">I'am Stay!</span>
+                    </a>
+                </div>
+                <br /> <br />
+            </div>
 
-            <br /> <br /> <br /> <br />
-            <br /> <br /> <br /> <br />
+
             <br /> <br /> <br /> <br />
             <br /> <br /> <br /> <br />
         </div>
@@ -432,6 +435,19 @@
     const ROOM_STATUS_ON_PLAY = 1
     const ROOM_STATUS_NOT_USE = 2
 
+    // FOR ROOM PLAYER AS VALUE
+    const AS_VALUE_ELEVEN = 0
+    const AS_VALUE_ONE    = 1
+
+    // FOR ROOM PLAYER STATUS
+    const PLAYER_STATUS_INVITED = 0
+    const PLAYER_STATUS_JOIN    = 1
+    const PLAYER_STATUS_IDLE    = 2
+    const PLAYER_STATUS_AT_TURN = 3
+    const PLAYER_STATUS_OUT     = 4
+    const PLAYER_STATUS_BUST    = 5
+
+
     new Vue({
         el: '#app',
         data() {
@@ -457,6 +473,15 @@
                     },
                     players : [],
                     status : 0,
+                },
+                player_in_room : {
+                    id:"",
+                    name:"",
+                    bet:0,
+                    cards : [],
+                    total_show : 0,
+                    total : 0,
+                    status :0                    
                 },
                 add_room : {
                     host_id:"",
@@ -484,9 +509,14 @@
         },
         mounted () {
             window.$('.dropdown-trigger').dropdown()
-            window.$('.modal').modal()
+            window.$('.modal').modal({opacity:0.1,dismissible: false,preventScrolling:false})
             this.initPlayer()  
             this.randomName()      
+        },
+        watch: {
+            'player_in_room.status' : (val) => {
+                window.$("#modal-room-action").modal(val == 3 ? 'open' : 'close')
+            }
         },
         computed : {
             getPageName(){
@@ -596,8 +626,20 @@
                             window.M.toast({html: '<b>Room Not Found!</b>', classes: 'white green-text'})
                             return
                         }
-                        console.log(response.data.result.players)
                         this.room = response.data.result
+                        this.getPlayerInRoom(roomId)
+                    })
+                    .catch(e => {
+                        console.log(e)
+                    })
+            },
+            getPlayerInRoom(roomId){
+                axios.get(this.baseUrl() + "room/player" + "?id-player="+this.player.id + "&id-room="+roomId)
+                    .then(response => {
+                        if (response.data.status == 404) {
+                            return
+                        }
+                        this.player_in_room = response.data.result
                     })
                     .catch(e => {
                         console.log(e)

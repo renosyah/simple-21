@@ -87,6 +87,31 @@ func (h *RouterHub) HandleDetailRoom(w http.ResponseWriter, r *http.Request) {
 	api.HttpResponse(w, r, rm, http.StatusOK)
 }
 
+func (h *RouterHub) HandleDetailRoomPlayer(w http.ResponseWriter, r *http.Request) {
+
+	pID := r.FormValue("id-player")
+	rID := r.FormValue("id-room")
+
+	if pID == "" || rID == "" {
+		api.HttpResponseException(w, r, http.StatusBadRequest)
+		return
+	}
+
+	room, ok := h.Rooms[rID]
+	if !ok {
+		api.HttpResponseException(w, r, http.StatusNotFound)
+		return
+	}
+
+	player, ok := room.RoomPlayers[pID]
+	if !ok {
+		api.HttpResponseException(w, r, http.StatusNotFound)
+		return
+	}
+
+	api.HttpResponse(w, r, player, http.StatusOK)
+}
+
 func (h *RouterHub) HandleRemoveRoom(w http.ResponseWriter, r *http.Request) {
 	var param model.DeleteRoom
 

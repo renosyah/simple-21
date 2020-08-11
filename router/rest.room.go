@@ -280,7 +280,6 @@ func (h *RouterHub) HandlePlayerActionTurnRoom(w http.ResponseWriter, r *http.Re
 		}
 	}
 
-	// bust
 	if player.Total == 21 {
 
 		player.Status = model.PLAYER_STATUS_OUT

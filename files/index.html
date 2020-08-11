@@ -324,7 +324,7 @@
                                         </span>
                                         <p>Total : {{ room.dealer.total_show }} <br /><br /> </p>  
                                         <div class="row">  
-                                            <div v-for="(c,ic) in room.dealer.cards" v-bind:key="ic" class="col s1 m1 l1 card-panel z-depth-2 remi-card" :class="{'white': c.show,'grey lighten-1': !c.show}" style="width: 90px;margin-left:-50px;float:left;">
+                                            <div v-for="(c,ic) in room.dealer.cards" v-bind:key="ic" class="col s1 m1 l1 card-panel z-depth-2 remi-card" :style="{'border-style': 'dotted','border-color': !c.show ? 'black' : 'white'}" style="width: 90px;margin-left:-50px;float:left;">
                                                 <div class="card-bg" :style="{'background-image': 'url('+ c.image +')'}">
                                                     <span class="black-text" v-show="c.show">
                                                         <span class="left">{{ c.label }}</span> 
@@ -336,14 +336,15 @@
                                                         <span class="right">{{ c.label }}</span>
                                                     </span>
                                                 </div>
-                                                <span class="white-text" v-show="!c.show">
-                                                    <span class="left">  ? </span> 
+                                                <span class="black-text" v-show="!c.show">
+                                                    <span class="left">  <br /> </span> 
                                                     <br /><br />
-                                                    <div class="row">
-                                                        <span class="col s4 offset-s4"> ? </span>
-                                                    </div>
+                                                    <p class="center" style="font-size: 34px;">
+                                                        ?
+                                                    </p>
                                                     <br /> 
-                                                    <span class="right"> ? </span>
+                                                    <br /> 
+                                                    <span class="right"> <br /> </span>
                                                 </span>
                                             </div>
                                         </div>
@@ -810,7 +811,7 @@
                             this.getRoom(idRoom)
                             break;
                         case ROOM_EVENT_ON_PLAYER_SET_BET:
-                            window.M.toast({html: '<b>' + event.data.name + ' is Join the room!</b>', classes: 'white green-text'})
+                            window.M.toast({html: '<b>' + event.data.name + ' has Set his bet!</b>', classes: 'white green-text'})
                             this.getRoom(idRoom)
                             break;
                         case ROOM_EVENT_ON_GAME_START:

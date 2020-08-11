@@ -109,7 +109,7 @@ func (h *RouterHub) EndRound(id string) {
 
 func (r *RoomsHub) isPlayersStatusSame(status int) bool {
 	for _, i := range r.RoomPlayers {
-		if i.Status != status && i.Status != model.PLAYER_STATUS_BUST {
+		if i.Status != status && i.Status != model.PLAYER_STATUS_BUST && i.Status != model.PLAYER_STATUS_OUT {
 			return false
 		}
 	}

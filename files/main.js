@@ -80,7 +80,8 @@ new Vue({
             add_room : {
                 host_id:"",
                 name:"",
-                players:[]
+                players:[],
+                card_groups : []
             },
             moneys : [],
             lobby_ws : null,
@@ -93,6 +94,7 @@ new Vue({
                 port : ""
             },
             random_name :"",
+            card_groups : []
         }
     },
     created(){
@@ -365,7 +367,8 @@ new Vue({
             this.lobby_ws.onopen = () => {
                 this.getPlayers()
                 this.getRooms()
-                this.getMoneys()                     
+                this.getMoneys()
+                this.cardsGroup()                     
             }
             this.lobby_ws.onerror = (e) => {
                 console.log(e)
@@ -438,6 +441,18 @@ new Vue({
             axios.get(this.baseUrl() + "random-name" + "?title="+title)
                 .then(response => {
                     this.random_name = response.data.result
+                })
+                .catch(e => {
+                    console.log(e)
+                })
+        },
+        cardsGroup(){
+            axios.get(this.baseUrl() + "card-group")
+                .then(response => {
+                    this.card_groups = response.data.result
+                    this.card_groups.forEach(element => {
+                        this.add_room.card_groups.push(element)
+                    });
                 })
                 .catch(e => {
                     console.log(e)

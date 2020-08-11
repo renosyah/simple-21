@@ -19,6 +19,10 @@ func HandleGetRandomName(w http.ResponseWriter, r *http.Request) {
 	api.HttpResponse(w, r, util.GenerateRandomName(wttl != ""), http.StatusOK)
 }
 
+func HandleGetCardsGroup(w http.ResponseWriter, r *http.Request) {
+	api.HttpResponse(w, r, model.CARD_GROUPS, http.StatusOK)
+}
+
 func (h *RouterHub) dropOffPlayer() {
 	for {
 		h.ConnectionMx.Lock()
@@ -173,7 +177,7 @@ func (r *RoomsHub) resetRoom() {
 	r.ConnectionMx.Lock()
 	defer r.ConnectionMx.Unlock()
 
-	cards := model.NewCards()
+	cards := model.NewCards(r.Room.CardGroups)
 	r.Cards = make(map[string]*model.Card)
 	for _, c := range cards {
 		r.Cards[c.ID] = c.CopyPointer()

@@ -96,8 +96,23 @@
                     </div>
                     <div class="card-panel white">
                         <h6 class="green-text">
-                            <span v-show="langCheck('ind')">Pemain ({{ players.length }})</span>
-                            <span v-show="langCheck('en')">Players ({{ players.length }})</span>
+                            <span v-show="langCheck('ind')">Grup Kartu</span>
+                            <span v-show="langCheck('en')">Card Group</span>
+                        </h6>
+                        <br />
+                        <a v-for="(cg,i) in card_groups" v-bind:key="i">
+                            <label>
+                                <input type="checkbox" class="filled-in checkbox-green" :value="cg" v-model="add_room.card_groups" checked="checked" />
+                                <span class="green-text"> {{ cg }} </span>
+                            </label>
+                            &nbsp;&nbsp;
+                        </a>
+                        <br /><br />
+                    </div>
+                    <div class="card-panel white">
+                        <h6 class="green-text">
+                            <span v-show="langCheck('ind')">Undang Pemain ({{ players.length }})</span>
+                            <span v-show="langCheck('en')">Invite Players ({{ players.length }})</span>
                         </h6>
                         <p v-show="players.length <= 1">-                                         
                             <span v-show="langCheck('ind')">Tidak Ada Pemain Lain</span>
@@ -121,7 +136,7 @@
                     </div>
                 </div>
             </div>
-            <div class="modal-footer">
+            <div class="modal-footer" v-show="add_room.name != '' && add_room.card_groups.length > 0">
                 <a class="modal-close waves-effect waves-light btn-medium btn green white-text" style="text-transform:none;width: 100%;" @click="addRoom">
                     <b>
                         <span v-show="langCheck('ind')">Buat</span>

@@ -39,9 +39,15 @@ func (c *Card) CopyPointer() *Card {
 	}
 }
 
-func NewCards() []Card {
+func NewCards(cgroups []string) []Card {
 	var cards []Card
-	for pos, g := range CARD_GROUPS {
+
+	groups := cgroups
+	if len(cgroups) == 0 {
+		groups = CARD_GROUPS
+	}
+
+	for pos, g := range groups {
 		for i := 1; i <= 13; i++ {
 			value := i
 

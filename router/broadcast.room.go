@@ -12,7 +12,7 @@ import (
 	uuid "github.com/satori/go.uuid"
 )
 
-func (h *RouterHub) openRoom(pHostID, name string, player []model.Player) {
+func (h *RouterHub) openRoom(pHostID, name string, player []model.Player, cgroups []string) {
 	h.ConnectionMx.Lock()
 	defer h.ConnectionMx.Unlock()
 
@@ -28,10 +28,11 @@ func (h *RouterHub) openRoom(pHostID, name string, player []model.Player) {
 	}
 
 	room := model.Room{
-		ID:      fmt.Sprint(uuid.NewV4()),
-		OwnerID: pHostID,
-		Name:    name,
-		Players: roomPLayers,
+		ID:         fmt.Sprint(uuid.NewV4()),
+		OwnerID:    pHostID,
+		Name:       name,
+		Players:    roomPLayers,
+		CardGroups: cgroups,
 	}
 	hub := h.createRoomHub(room)
 
@@ -84,7 +85,7 @@ func (h *RoomsHub) receiveBroadcastsEvent(ctx context.Context, wsconn *websocket
 
 func (h *RouterHub) createRoomHub(room model.Room) *RoomsHub {
 
-	cards := model.NewCards()
+	cards := model.NewCards(room.CardGroups)
 
 	timeSet := time.Now().Local()
 	timeExp := timeSet.Add(time.Hour*time.Duration(0) +

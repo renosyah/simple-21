@@ -19,12 +19,17 @@ func (h *RouterHub) HandleAddRoom(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	if len(param.CardGroups) == 0 {
+		api.HttpResponseException(w, r, http.StatusBadRequest)
+		return
+	}
+
 	if len(h.Rooms) >= h.Config.MaxRoom {
 		api.HttpResponseException(w, r, http.StatusInsufficientStorage)
 		return
 	}
 
-	h.openRoom(param.HostID, param.Name, param.Players)
+	h.openRoom(param.HostID, param.Name, param.Players, param.CardGroups)
 
 	h.Lobbies.EventBroadcast <- model.EventData{
 		Name: model.LOBBY_EVENT_ON_ROOM_CREATED,

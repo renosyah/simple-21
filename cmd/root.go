@@ -51,6 +51,7 @@ var rootCmd = &cobra.Command{
 		r.HandleFunc("/money/buy", routerHub.HandlePurchaseMoney)
 
 		r.HandleFunc("/random-name", router.HandleGetRandomName)
+		r.HandleFunc("/card-group", router.HandleGetCardsGroup)
 
 		r.HandleFunc("/ws-lobby", routerHub.HandleStreamLobby)
 		r.HandleFunc("/ws-room", routerHub.HandleStreamRoom)

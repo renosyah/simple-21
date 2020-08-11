@@ -80,7 +80,7 @@ func (h *RouterHub) HandleDetailRoom(w http.ResponseWriter, r *http.Request) {
 	}
 
 	sort.Slice(players, func(i, j int) bool {
-		return players[i].Name < players[j].Name
+		return players[i].TurnOrder < players[j].TurnOrder
 	})
 
 	rm := model.Room{
@@ -177,7 +177,7 @@ func (h *RouterHub) HandlePlaceBet(w http.ResponseWriter, r *http.Request) {
 			}
 			time.Sleep(2 * time.Second)
 
-			for id, _ := range room.RoomPlayers {
+			for _, id := range room.TurnsOrder {
 				room.givePlayerOneCard(id, true)
 				room.EventBroadcast <- model.RoomEventData{
 					Name: model.ROOM_EVENT_ON_CARD_GIVEN,
@@ -193,7 +193,7 @@ func (h *RouterHub) HandlePlaceBet(w http.ResponseWriter, r *http.Request) {
 			}
 			time.Sleep(2 * time.Second)
 
-			for id, _ := range room.RoomPlayers {
+			for _, id := range room.TurnsOrder {
 				room.givePlayerOneCard(id, true)
 				room.EventBroadcast <- model.RoomEventData{
 					Name: model.ROOM_EVENT_ON_CARD_GIVEN,
@@ -354,6 +354,11 @@ func (h *RouterHub) HandleRemoveRoom(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if param.PlayerID != room.Room.OwnerID {
+		api.HttpResponseException(w, r, http.StatusForbidden)
+		return
+	}
+
+	if len(room.RoomSubscriber) > 0 {
 		api.HttpResponseException(w, r, http.StatusForbidden)
 		return
 	}

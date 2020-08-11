@@ -11,6 +11,8 @@ const (
 	PLAYER_STATUS_FINISH_TURN = 4
 	PLAYER_STATUS_OUT         = 5
 	PLAYER_STATUS_BUST        = 6
+	PLAYER_STATUS_REWARDED    = 7
+	PLAYER_STATUS_LOSE        = 8
 )
 
 type (
@@ -24,6 +26,7 @@ type (
 		Total     int    `json:"total"`
 		Status    int    `json:"status"`
 		IsOnline  bool   `json:"is_online"`
+		TurnOrder int    `json:"-"`
 	}
 )
 

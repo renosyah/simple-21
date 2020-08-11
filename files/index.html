@@ -385,6 +385,8 @@
                                     <li class="collection-item avatar" :style="{'border-style': 'solid','border-color': r.status == 3 ? 'green' : r.status == 6 ? 'red' : 'white'}">
                                         <i class="material-icons circle green">account_circle</i>
                                         <span class="title">{{ r.name }} </span>
+                                        <span v-show="langCheck('ind') && r.id == player.id"> (Anda) </span>
+                                        <span v-show="langCheck('en') && r.id == player.id"> (You) </span>
                                         <p> Bet : $ {{ r.bet }} &nbsp;&nbsp; Total : {{ r.total_show }}<br /><br /> </p>
                                         <p v-show="r.cards.length == 0">
                                             <span v-show="langCheck('ind')">- Tidak Ada Kartu -</span>
@@ -421,6 +423,8 @@
                     </div>
                 </div>
             </div>
+
+            <!-- Modal bet -->
             <div id="modal-room-bet" class="modal bottom-sheet">
                 <div class="center">
                     <h5 class="green-text">
@@ -456,6 +460,8 @@
                 </div>
                 <br /> <br />
             </div>
+
+            <!-- Modal player action -->
             <div id="modal-room-action" class="modal bottom-sheet">
                 <div class="center">
                     <h5 class="green-text">
@@ -475,6 +481,39 @@
                 <br /> <br />
             </div>
 
+            <!-- Modal Message lose -->
+            <div id="modal-room-lose" class="modal">
+                <div class="modal-content">
+                <h4 class="green-text">
+                    <span v-show="langCheck('ind')">Anda Kalah</span>
+                    <span v-show="langCheck('en')">You Lose</span>
+                </h4>
+                <p>
+                    <span v-show="langCheck('ind')">Semua Taruhan anda diambil</span>
+                    <span v-show="langCheck('en')">All your bet is taken</span>
+                </p>
+                </div>
+                <div class="modal-footer">
+                <a style="cursor: pointer;" class="modal-close waves-effect waves-green btn-flat">Close</a>
+                </div>
+            </div>
+
+            <!-- Modal Message win -->
+            <div id="modal-room-win" class="modal">
+                <div class="modal-content">
+                <h4 class="green-text">
+                    <span v-show="langCheck('ind')">Anda Menang</span>
+                    <span v-show="langCheck('en')">You Win</span>
+                </h4>
+                <p>
+                    <span v-show="langCheck('ind')">Uang Anda telah ditambah</span>
+                    <span v-show="langCheck('en')">Your money hass been increase</span>
+                </p>
+                </div>
+                <div class="modal-footer">
+                <a style="cursor: pointer;" class="modal-close waves-effect waves-green btn-flat">Close</a>
+                </div>
+            </div>
 
             <br /> <br /> <br /> <br />
             <br /> <br /> <br /> <br />
@@ -524,7 +563,8 @@
     const PLAYER_STATUS_FINISH_TURN = 4
     const PLAYER_STATUS_OUT     = 5
     const PLAYER_STATUS_BUST    = 6
-
+	const PLAYER_STATUS_REWARDED= 7
+	const PLAYER_STATUS_LOSE    = 8
 
     new Vue({
         el: '#app',
@@ -596,6 +636,8 @@
             player_in_room : (val) => {
                 window.$("#modal-room-action").modal(val.status == PLAYER_STATUS_AT_TURN ? 'open' : 'close');
                 window.$("#modal-room-bet").modal(val.status == PLAYER_STATUS_INVITED || val.status == PLAYER_STATUS_IDLE ? 'open' : 'close');    
+                window.$("#modal-room-win").modal(val.status == PLAYER_STATUS_REWARDED ? 'open' : 'close');
+                window.$("#modal-room-lose").modal(val.status == PLAYER_STATUS_LOSE ? 'open' : 'close');
             }
         },
         computed : {
@@ -687,7 +729,7 @@
             },
             addRoom(){
                 this.add_room.host_id = this.player.id
-                this.add_room.players.push(this.player)
+                this.add_room.players.unshift(this.player)
                 this.is_loading = true
                 axios.post(this.baseUrl() + "addroom",JSON.stringify(this.add_room))
                     .then(response => {

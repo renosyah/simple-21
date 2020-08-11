@@ -38,7 +38,7 @@ func (h *RouterHub) dropOffPlayer() {
 func (h *RouterHub) dropEmptyRoom() {
 	for {
 		for id, room := range h.Rooms {
-			if len(room.RoomPlayers) == 0 && time.Now().Local().After(room.SessionExpired) {
+			if len(room.RoomSubscriber) == 0 && time.Now().Local().After(room.SessionExpired) {
 				h.Rooms[id].EventBroadcast <- model.RoomEventData{Status: model.ROOM_STATUS_NOT_USE}
 				break
 			}
@@ -95,13 +95,15 @@ func (h *RouterHub) EndRound(id string) {
 	r.Dealer.SumUpTotal()
 
 	for _, p := range r.RoomPlayers {
-		if p.Total > r.Dealer.Total {
+		if p.Total > r.Dealer.Total && p.Total <= 21 {
 			if pAcc, okAcc := h.Players[p.ID]; okAcc {
 				pAcc.Money += p.Bet * 2
 				p.Bet = 0
+				p.Status = model.PLAYER_STATUS_REWARDED
 			}
 		} else {
 			p.Bet = 0
+			p.Status = model.PLAYER_STATUS_LOSE
 		}
 	}
 

@@ -108,8 +108,8 @@ func (h *RouterHub) createRoomHub(room model.Room) *RoomsHub {
 		EventBroadcast: make(chan model.RoomEventData),
 	}
 
-	for _, p := range room.Players {
-		r.RoomPlayers[p.ID] = &model.RoomPlayer{ID: p.ID, Name: p.Name, Cards: []model.Card{}}
+	for i, p := range room.Players {
+		r.RoomPlayers[p.ID] = &model.RoomPlayer{ID: p.ID, Name: p.Name, Cards: []model.Card{}, TurnOrder: i}
 		r.TurnsOrder = append(r.TurnsOrder, p.ID)
 	}
 

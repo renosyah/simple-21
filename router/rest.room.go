@@ -309,30 +309,23 @@ func (h *RouterHub) HandlePlayerActionTurnRoom(w http.ResponseWriter, r *http.Re
 		}
 	}
 
+	evtNm := model.ROOM_EVENT_ON_PLAYER_END_TURN
+
 	if player.Total == 21 {
 
-		player.Status = model.PLAYER_STATUS_OUT
-		player.Bet = 0
-		room.EventBroadcast <- model.RoomEventData{
-			Name: model.ROOM_EVENT_ON_PLAYER_BLACKJACK_WIN,
-			Data: model.Player{Name: player.Name},
-		}
+		player.Status = model.PLAYER_STATUS_REWARDED
+		evtNm = model.ROOM_EVENT_ON_PLAYER_BLACKJACK_WIN
 
 	} else if player.Total > 21 {
 
 		player.Status = model.PLAYER_STATUS_BUST
-		player.Bet = 0
-		room.EventBroadcast <- model.RoomEventData{
-			Name: model.ROOM_EVENT_ON_PLAYER_BUST,
-			Data: model.Player{Name: player.Name},
-		}
+		evtNm = model.ROOM_EVENT_ON_PLAYER_BUST
 
-	} else {
+	}
 
-		room.EventBroadcast <- model.RoomEventData{
-			Name: model.ROOM_EVENT_ON_PLAYER_END_TURN,
-			Data: model.Player{Name: player.Name},
-		}
+	room.EventBroadcast <- model.RoomEventData{
+		Name: evtNm,
+		Data: model.Player{Name: player.Name},
 	}
 
 	// end round sum up

@@ -40,10 +40,22 @@ func (h *RouterHub) HandleListRoom(w http.ResponseWriter, r *http.Request) {
 	pID := r.FormValue("id-player")
 
 	for _, r := range h.Rooms {
+
+		players := []model.RoomPlayer{}
+		for _, p := range r.RoomPlayers {
+			players = append(players, p.Copy())
+		}
+
+		sort.Slice(players, func(i, j int) bool {
+			return players[i].TurnOrder < players[j].TurnOrder
+		})
+
 		rooms = append(rooms, model.Room{
 			ID:        r.Room.ID,
 			Name:      r.Room.Name,
+			Players:   players,
 			Removable: r.Room.OwnerID == pID,
+			Round:     r.Round,
 		})
 	}
 
@@ -88,6 +100,7 @@ func (h *RouterHub) HandleDetailRoom(w http.ResponseWriter, r *http.Request) {
 		Name:    room.Room.Name,
 		Dealer:  *room.Dealer,
 		Players: players,
+		Round:   room.Round,
 	}
 
 	api.HttpResponse(w, r, rm, http.StatusOK)
@@ -103,6 +116,12 @@ func (h *RouterHub) HandleDetailRoomPlayer(w http.ResponseWriter, r *http.Reques
 		return
 	}
 
+	p, ok := h.Players[pID]
+	if !ok {
+		api.HttpResponseException(w, r, http.StatusNotFound)
+		return
+	}
+
 	room, ok := h.Rooms[rID]
 	if !ok {
 		api.HttpResponseException(w, r, http.StatusNotFound)
@@ -111,7 +130,12 @@ func (h *RouterHub) HandleDetailRoomPlayer(w http.ResponseWriter, r *http.Reques
 
 	player, ok := room.RoomPlayers[pID]
 	if !ok {
-		api.HttpResponseException(w, r, http.StatusNotFound)
+		spect := model.RoomPlayer{
+			ID:     p.ID,
+			Name:   p.Name,
+			Status: model.PLAYER_STATUS_SPECTATE,
+		}
+		api.HttpResponse(w, r, spect, http.StatusOK)
 		return
 	}
 

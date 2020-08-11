@@ -101,6 +101,7 @@ func (h *RouterHub) createRoomHub(room model.Room) *RoomsHub {
 			Name:  util.GenerateRandomName(true),
 			Cards: []model.Card{},
 		},
+		Round:          1,
 		RoomPlayers:    make(map[string]*model.RoomPlayer),
 		Cards:          make(map[string]*model.Card),
 		SessionExpired: timeExp,

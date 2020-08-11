@@ -5,7 +5,6 @@ import (
 	"encoding/json"
 	"io/ioutil"
 	"net/http"
-	"sort"
 	"time"
 
 	"github.com/asaskevich/govalidator"
@@ -92,7 +91,7 @@ func (h *RouterHub) EndRound(id string) {
 	r.ConnectionMx.Lock()
 	defer r.ConnectionMx.Unlock()
 
-	highscorePlayer := r.highScorePlayer()
+	r.Round++
 
 	for _, p := range r.RoomPlayers {
 
@@ -121,7 +120,7 @@ func (h *RouterHub) EndRound(id string) {
 
 				// if player is score is higher
 				// win
-			} else if highscorePlayer.ID == p.ID && p.Total > r.Dealer.Total && p.Total <= 21 {
+			} else if r.isMineHighThanOther(p) {
 
 				if pAcc, okAcc := h.Players[p.ID]; okAcc {
 					pAcc.Money += (p.Bet * 2)
@@ -140,19 +139,25 @@ func (h *RouterHub) EndRound(id string) {
 	}
 }
 
-func (r *RoomsHub) highScorePlayer() model.RoomPlayer {
+func (r *RoomsHub) isMineHighThanOther(p *model.RoomPlayer) bool {
+	isHigher := true
 
-	players := []model.RoomPlayer{}
-	for _, p := range r.RoomPlayers {
-		players = append(players, model.RoomPlayer{ID: p.ID, Total: p.Total})
+	if p.Total > 21 {
+		return false
 	}
-	players = append(players, model.RoomPlayer{ID: r.Dealer.ID, Total: r.Dealer.Total})
 
-	sort.Slice(players, func(i, j int) bool {
-		return players[i].Total > players[j].Total
-	})
+	if p.Total < r.Dealer.Total {
+		return false
+	}
 
-	return players[0]
+	for _, rp := range r.RoomPlayers {
+		if rp.ID != p.ID && rp.Total < p.Total {
+			isHigher = false
+			break
+		}
+	}
+
+	return isHigher
 }
 
 func (r *RoomsHub) isPlayersStatusSame(status int) bool {

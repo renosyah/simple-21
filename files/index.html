@@ -285,10 +285,19 @@
                                         <span v-show="langCheck('ind')">Ruangan</span>
                                         <span v-show="langCheck('en')">Room</span>
                                     {{ r.name }}</span>
-                                    <br /><br />
+                                    <br />
+                                    <span v-show="langCheck('ind')">Jumlah Pemain : </span>
+                                    <span v-show="langCheck('en')">Players : </span>
+                                    {{ r.players.length }}
+                                    <br />
+                                    <span v-show="langCheck('ind')">Ronde ke : </span>
+                                    <span v-show="langCheck('en')">Round : </span>
+                                    {{ r.round }}
+
+                                    <br /> <br />
                                     <a class="waves-effect waves-light btn-small green white-text" @click="toRoom(r.id)">
-                                        <span v-show="langCheck('ind')">Gabung</span>
-                                        <span v-show="langCheck('en')">Join</span>
+                                        <span v-show="langCheck('ind')">{{ isPlayerInRoom(r.id) ? 'Gabung' : 'Nonton' }}</span>
+                                        <span v-show="langCheck('en')">{{ isPlayerInRoom(r.id) ? 'Join' : 'Watch' }}</span>
                                     </a>
                                     <a style="cursor: pointer;" class="secondary-content" @click="deleteRoom(r.id)" v-show="r.removable"><i class="material-icons green-text">delete</i></a>
                                 </li>
@@ -437,15 +446,21 @@
             <div id="modal-room-bet" class="modal bottom-sheet">
                 <div class="center">
                     <h5 class="green-text">
-                        <span v-show="langCheck('ind')">Masukkan Taruhan Anda</span>
-                        <span v-show="langCheck('en')">Settle Your Bet</span>                    
+                            {{ room.name }}           
                     </h5>
+                    <h6>
+                        <span v-show="langCheck('ind')">Ronde Ke&nbsp;</span>
+                        <span v-show="langCheck('en')">Round&nbsp;</span>
+                        {{ room.round }}  
+                    </h6>
                     <div class="row">
                         <div class="col s1 m2 l3"></div>
                         <div class="center col s10 m8 l6">
-                            <h5 class="red-text" v-show="player.money > 50">
+                            <h6 class="red-text" v-show="player.money > 50">
+                                <span v-show="langCheck('ind')">Jumlah Taruhan : </span>
+                                <span v-show="langCheck('en')">Bet Amount : </span>
                                 $ {{ bet_holder }}                  
-                            </h5>
+                            </h6>
                             <p v-show="player.money < 50"> 
                                 <span v-show="langCheck('ind')">Uang Anda Tidak Cukup!</span>
                                 <span v-show="langCheck('en')">You Dont Have enough money!</span>
@@ -456,7 +471,7 @@
                         </div>
                         <div class="col s1 m2 l3"></div>
                     </div>
-                    <br />
+                    
                     <a class="waves-effect waves-light btn-large green white-text" style="text-transform: none;margin-top: 10px;" :disabled="bet_holder == 0" @click="setBet" v-show="player.money >= 50">
                         <span v-show="langCheck('ind')">Pasang Taruhan</span>
                         <span v-show="langCheck('en')">Set Bet</span>
@@ -549,6 +564,49 @@
                     <span v-show="langCheck('ind')">Uang Anda telah ditambah</span>
                     <span v-show="langCheck('en')">Your money hass been increase</span>
                 </p>
+                <div class="center">
+                    <table>
+                        <thead>
+                          <tr>
+                            <th>                    
+                                <span v-show="langCheck('ind')">Nama Pemain</span>
+                                <span v-show="langCheck('en')">Player Name</span>
+                            </th>
+                            <th>
+                                <span v-show="langCheck('ind')">Total</span>
+                                <span v-show="langCheck('en')">Total</span>
+                            </th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>{{ room.dealer.name }}</td>
+                                <td :class="{'red-text' : room.dealer.total > 21 }">{{ room.dealer.total > 21 ? room.dealer.total + ' (Bust)' : room.dealer.total }}</td>
+                              </tr>
+                          <tr v-for="pr in room.players" v-bind:key="pr.id">
+                            <td>{{ pr.name }}</td>
+                            <td :class="{'red-text' : pr.status == 8,'green-text' : pr.status == 7}">{{ pr.total > 21 ? pr.total + ' (Bust)' : pr.total }}</td> 
+                          </tr>
+                        </tbody>
+                      </table>
+                    </div>
+                </div>
+                <p class="center">
+                    <span v-show="langCheck('ind')"> Meyiapkan Ronde Selanjutnya.... </span>
+                    <span v-show="langCheck('en')"> Prepare for next round... </span>
+                </p>
+                <div class="modal-footer">
+                <!---<a style="cursor: pointer;" class="modal-close waves-effect waves-green btn-flat">Close</a>--->
+                </div>
+            </div>
+
+            <!-- Modal Message score -->
+            <div id="modal-room-score" class="modal">
+                <div class="modal-content">
+                <h4 class="green-text">
+                    <span v-show="langCheck('ind')">Papan Skor</span>
+                    <span v-show="langCheck('en')">Score Board</span>
+                </h4>
                 <div class="center">
                     <table>
                         <thead>

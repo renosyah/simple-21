@@ -15,6 +15,7 @@ type (
 		Players   []RoomPlayer `json:"players"`
 		Removable bool         `json:"removable"`
 		Status    int          `json:"status"`
+		Round     int          `json:"round"`
 	}
 	AddRoom struct {
 		HostID  string   `json:"host_id"`

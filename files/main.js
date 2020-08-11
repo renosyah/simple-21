@@ -26,6 +26,8 @@ const AS_VALUE_ELEVEN = 0
 const AS_VALUE_ONE    = 1
 
 // FOR ROOM PLAYER STATUS
+
+const PLAYER_STATUS_SPECTATE = -1
 const PLAYER_STATUS_INVITED = 0
 const PLAYER_STATUS_SET_BET = 1
 const PLAYER_STATUS_IDLE    = 2
@@ -383,6 +385,9 @@ new Vue({
                         this.getRoom(idRoom)
                         break;
                     case ROOM_EVENT_ON_GAME_START:
+                        if (this.player_in_room.status == PLAYER_STATUS_SPECTATE){
+                            window.$("#modal-room-score").modal('close');
+                        }  
                         window.M.toast({outDuration : TOAST_OUT_DURRATION,html: '<b>game is started!</b>', classes: 'white green-text'})
                         this.getRoom(idRoom)
                         break;
@@ -404,6 +409,9 @@ new Vue({
                         break
                     case ROOM_EVENT_ON_GAME_END:
                         window.M.toast({outDuration : TOAST_OUT_DURRATION,html: '<b>Round is End!</b>', classes: 'white green-text'})
+                        if (this.player_in_room.status == PLAYER_STATUS_SPECTATE){
+                            window.$("#modal-room-score").modal('open');
+                        }
                         this.getRoom(idRoom)
                         break;
                     case ROOM_EVENT_ON_DISCONNECTED:
@@ -440,6 +448,28 @@ new Vue({
                 searchParams.set('page', 'room-page');
                 window.location.search = searchParams.toString();
             }
+        },
+        isPlayerInRoom(roomId){
+            
+            let exist = false
+            let roomPos = 0
+            let i;
+            for (i = 0; i < this.rooms.length; i++) {
+                if (this.rooms[i].id == roomId){
+                    roomPos = i
+                    break;
+                }
+            }
+            i = 0;
+            let players = this.rooms[roomPos].players
+            for (i = 0; i < players.length; i++) {
+                if (players[i].id == this.player.id){
+                    exist = true
+                    break;
+                }
+            }
+
+            return exist
         },
         switchPage(name){
             if ('URLSearchParams' in window) {

@@ -409,17 +409,21 @@
                     <div class="row">
                         <div class="col s1 m2 l3"></div>
                         <div class="center col s10 m8 l6">
-                            <h5 class="red-text">
+                            <h5 class="red-text" v-show="player.money > 0">
                                 $ {{ player_in_room.bet }}                  
                             </h5>
-                            <p class="range-field">
+                            <p v-show="player.money <= 0"> 
+                                <span v-show="langCheck('ind')">Uang Anda Tidak Cukup!</span>
+                                <span v-show="langCheck('en')">You Dont Have enough money!</span>
+                             </p>
+                            <p class="range-field" v-show="player.money > 0">
                                 <input class="range-green" type="range" min="50" :max="player.money" v-model="player_in_room.bet" />
                             </p>
                         </div>
                         <div class="col s1 m2 l3"></div>
                     </div>
                     <br />
-                    <a class="waves-effect waves-light btn-large green white-text" style="text-transform: none;margin-top: 10px;" :disabled="player_in_room.bet == 0" @click="setBet">
+                    <a class="waves-effect waves-light btn-large green white-text" style="text-transform: none;margin-top: 10px;" :disabled="player_in_room.bet == 0" @click="setBet" v-show="player.money > 0">
                         <span v-show="langCheck('ind')">Pasang Taruhan</span>
                         <span v-show="langCheck('en')">Set Bet</span>
                     </a>

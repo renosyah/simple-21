@@ -2,6 +2,10 @@
 
 Simple game 21 card
 
+## Game
+
+you can try login and play some blackjack here : ![https://simple-21.herokuapp.com](https://simple-21.herokuapp.com)
+
 ## Overview
 
 * Login

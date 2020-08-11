@@ -48,11 +48,12 @@ type (
 	}
 
 	RouterHub struct {
-		ConnectionMx sync.RWMutex
-		Players      map[string]*model.Player
-		Lobbies      *LobbiesHub
-		Rooms        map[string]*RoomsHub
-		Config       model.GameConfig
+		ConnectionMx   sync.RWMutex
+		Players        map[string]*model.Player
+		Lobbies        *LobbiesHub
+		Rooms          map[string]*RoomsHub
+		ListMoneyShops map[string]model.Money
+		Config         model.GameConfig
 	}
 )
 
@@ -79,11 +80,17 @@ func NewRouterHub(cfg model.GameConfig) *RouterHub {
 	}()
 
 	h := &RouterHub{
-		ConnectionMx: sync.RWMutex{},
-		Config:       cfg,
-		Lobbies:      lobHub,
-		Players:      make(map[string]*model.Player),
-		Rooms:        make(map[string]*RoomsHub),
+		ConnectionMx:   sync.RWMutex{},
+		Config:         cfg,
+		Lobbies:        lobHub,
+		Players:        make(map[string]*model.Player),
+		Rooms:          make(map[string]*RoomsHub),
+		ListMoneyShops: make(map[string]model.Money),
+	}
+
+	moneys := model.ListMoney()
+	for _, m := range moneys {
+		h.ListMoneyShops[m.ID] = m
 	}
 
 	go h.dropOffPlayer()

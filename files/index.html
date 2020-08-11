@@ -198,6 +198,27 @@
                                     <p> $ {{ player.money }}</p>
                                 </li>
                             </ul>
+                            <h5 class="green-text" v-show="player.money < 50">
+                                <span v-show="langCheck('ind')">Isi Ulang</span>
+                                <span v-show="langCheck('en')">Top Up</span>
+                            </h5>
+                            <div class="row" v-show="player.money < 50">
+                                <div v-for="money in moneys" v-bind:key="money.id"  class="col s6 m6 l6 ">
+                                    <div class="center card-panel z-depth-2">
+                                        <div style="cursor: pointer;" @click=buyMoney(money.id)>
+                                           
+                                            <span class="center green-text">
+                                                {{ money.name }}
+                                            </span>
+                                            <br />
+                                            <span class="center black-text">
+                                                $ {{ money.amount }}
+                                            </span>
+                                            
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
                             <div class="row">
                                 <div class="center col s6 s6 l6">
                                     <br />
@@ -545,6 +566,7 @@
                     name:"",
                     players:[]
                 },
+                moneys : [],
                 lobby_ws : null,
                 room_ws : null,
                 is_online : true,
@@ -767,6 +789,31 @@
                         console.log(e)
                     })
             },
+            getMoneys(){
+                axios.get(this.baseUrl() + "moneys" +"?id-player=" + this.player.id)
+                    .then(response => {
+                        this.moneys = response.data.result
+                    })
+                    .catch(e => {
+                        console.log(e)
+                    })
+            },
+            buyMoney(idMoney){
+                this.is_loading = true
+                axios.post(this.baseUrl() + "money/buy",JSON.stringify({id:idMoney,player_id:this.player.id}))
+                    .then(response => {
+                        this.is_loading = false
+                        if (response.data.status != 200) {
+                            window.M.toast({html: '<b>Failed Purchase!</b>', classes: 'white green-text'})
+                            return
+                        }
+                        this.player.money = response.data.result.money
+                    })
+                    .catch(e => {
+                        this.is_loading = false
+                        console.log(e)
+                    })
+            },
             initLobbyWs(){
                 this.lobby_ws = new WebSocket("ws://" + this.host.name + ":" + this.host.port + "/ws-lobby?id-player=" + this.player.id)
                 this.lobby_ws.onmessage = (evt) => {
@@ -797,7 +844,8 @@
                 }
                 this.lobby_ws.onopen = () => {
                     this.getPlayers()
-                    this.getRooms()                     
+                    this.getRooms()
+                    this.getMoneys()                     
                 }
                 this.lobby_ws.onerror = (e) => {
                     console.log(e)

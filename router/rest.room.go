@@ -334,18 +334,22 @@ func (h *RouterHub) HandlePlayerActionTurnRoom(w http.ResponseWriter, r *http.Re
 
 			for {
 
+				time.Sleep(2 * time.Second)
+
+				room.Dealer.ShowAllCard()
+				room.Dealer.SumUpTotal()
+
 				if room.Dealer.Total >= 17 {
+					room.EventBroadcast <- model.RoomEventData{
+						Name: model.ROOM_EVENT_ON_CARD_GIVEN,
+					}
+
 					break
 				}
 
 				if room.Dealer.Total < 17 {
 
-					time.Sleep(2 * time.Second)
 					room.givePlayerOneCard(room.Dealer.ID, true)
-
-					room.Dealer.ShowAllCard()
-					room.Dealer.SumUpTotal()
-
 					room.EventBroadcast <- model.RoomEventData{
 						Name: model.ROOM_EVENT_ON_CARD_GIVEN,
 					}

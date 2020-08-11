@@ -168,12 +168,16 @@
                                     </div>
                                 </div>
                                 <div class="center card-action">
-                                    <a class="waves-effect waves-light btn-large btn green white-text" style="text-transform:none;width: 100%;" @click="addPlayer">
+                                    <a class="waves-effect waves-light btn-large btn green white-text" style="text-transform:none;width: 100%;" @click="addPlayer" :disabled="player.name == ''">
                                         <b>
                                             <span v-show="langCheck('ind')">Masuk</span>
                                             <span v-show="langCheck('en')">Enter</span>
                                         </b>    
                                     </a>
+                                    <p>
+                                        <span @click="switchLang('ind')" style="cursor : pointer" :class="{'green-text' : langCheck('ind'),'black-text': !langCheck('ind')}">IND</span> | 
+                                        <span @click="switchLang('en')" style="cursor : pointer"  :class="{'green-text' : langCheck('en'),'black-text': !langCheck('en') }">EN</span>
+                                    </p>
                                 </div>
                               </div>
                           </div>
@@ -322,6 +326,8 @@
                                     {{ p.name }}
                                 </span>
                                 <p>  
+                                    <span v-show="langCheck('ind')">Uang : </span>
+                                    <span v-show="langCheck('en')">Money : </span>
                                     $ {{ p.money }} <br>
                                     Status : {{ p.status == 0 ? 'Ready' : p.status == 1 ? 'Playing' : p.status == 2 ? 'Idle' : p.status == 3 ? 'In Turn' : p.status == 4 ? 'End Turn' : 'Out' }}  
                                 </p>
@@ -334,8 +340,8 @@
                         <div class="col s12 m12 l12">
                             <div class="card-panel white">
                                 <h6 class="green-text">
-                                    <span v-show="langCheck('ind')">DEALER</span>
-                                    <span v-show="langCheck('en')">DEALER</span>
+                                    <span v-show="langCheck('ind')">Dealer</span>
+                                    <span v-show="langCheck('en')">Dealer</span>
                                 </h6>
                                 <ul class="collection">
                                     <li class="collection-item avatar" :style="{'border-style': 'solid','border-color': room.dealer.status == 3 ? 'green' : 'white'}">
@@ -378,8 +384,8 @@
                         <div class="col s12 m12 l12">
                             <div class="card-panel white">
                                 <h6 class="green-text">
-                                    <span v-show="langCheck('ind')">PEMAIN</span>
-                                    <span v-show="langCheck('en')">PLAYER</span>
+                                    <span v-show="langCheck('ind')">Pemain</span>
+                                    <span v-show="langCheck('en')">Players</span>
                                 </h6>
                                 <ul class="collection" v-for="(r,i) in room.players" v-bind:key="i">
                                     <li class="collection-item avatar" :style="{'border-style': 'solid','border-color': r.status == 3 ? 'green' : r.status == 6 ? 'red' : 'white'}">
@@ -387,7 +393,10 @@
                                         <span class="title">{{ r.name }} </span>
                                         <span v-show="langCheck('ind') && r.id == player.id"> (Anda) </span>
                                         <span v-show="langCheck('en') && r.id == player.id"> (You) </span>
-                                        <p> Bet : $ {{ r.bet }} &nbsp;&nbsp; Total : {{ r.total_show }}<br /><br /> </p>
+                                        <p> 
+                                            <span v-show="langCheck('ind')">Taruhan : </span>
+                                            <span v-show="langCheck('en')">Bet : </span>
+                                            $ {{ r.bet }} &nbsp;&nbsp; Total : {{ r.total_show }}<br /><br /> </p>
                                         <p v-show="r.cards.length == 0">
                                             <span v-show="langCheck('ind')">- Tidak Ada Kartu -</span>
                                             <span v-show="langCheck('en')">- No Cards -</span>
@@ -434,21 +443,21 @@
                     <div class="row">
                         <div class="col s1 m2 l3"></div>
                         <div class="center col s10 m8 l6">
-                            <h5 class="red-text" v-show="player.money > 0">
-                                $ {{ player_in_room.bet }}                  
+                            <h5 class="red-text" v-show="player.money > 50">
+                                $ {{ bet_holder }}                  
                             </h5>
-                            <p v-show="player.money <= 0"> 
+                            <p v-show="player.money < 50"> 
                                 <span v-show="langCheck('ind')">Uang Anda Tidak Cukup!</span>
                                 <span v-show="langCheck('en')">You Dont Have enough money!</span>
                              </p>
-                            <p class="range-field" v-show="player.money > 0">
-                                <input class="range-green" type="range" min="50" :max="player.money" v-model="player_in_room.bet" />
+                            <p class="range-field" v-show="player.money > 50">
+                                <input class="range-green" type="range" min="50" :max="player.money" v-model="bet_holder" />
                             </p>
                         </div>
                         <div class="col s1 m2 l3"></div>
                     </div>
                     <br />
-                    <a class="waves-effect waves-light btn-large green white-text" style="text-transform: none;margin-top: 10px;" :disabled="player_in_room.bet == 0" @click="setBet" v-show="player.money > 0">
+                    <a class="waves-effect waves-light btn-large green white-text" style="text-transform: none;margin-top: 10px;" :disabled="bet_holder == 0" @click="setBet" v-show="player.money >= 50">
                         <span v-show="langCheck('ind')">Pasang Taruhan</span>
                         <span v-show="langCheck('en')">Set Bet</span>
                     </a>
@@ -492,9 +501,40 @@
                     <span v-show="langCheck('ind')">Semua Taruhan anda diambil</span>
                     <span v-show="langCheck('en')">All your bet is taken</span>
                 </p>
+                <div class="center">
+                    <table>
+                        <thead>
+                          <tr>
+                            <th>                    
+                                <span v-show="langCheck('ind')">Nama Pemain</span>
+                                <span v-show="langCheck('en')">Player Name</span>
+                            </th>
+                            <th>
+                                <span v-show="langCheck('ind')">Total</span>
+                                <span v-show="langCheck('en')">Total</span>
+                            </th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>{{ room.dealer.name }}</td>
+                                <td :class="{'red-text' : room.dealer.total > 21 }">{{ room.dealer.total > 21 ? room.dealer.total + ' (Bust)' : room.dealer.total }}</td>
+                              </tr>
+                          <tr v-for="pr in room.players" v-bind:key="pr.id">
+                            <td>{{ pr.name }}</td>
+                            <td :class="{'red-text' : pr.status == 8,'green-text' : pr.status == 7}">{{ pr.total > 21 ? pr.total + ' (Bust)' : pr.total }}</td> 
+                          </tr>
+                        </tbody>
+                      </table>
+                    </div>
                 </div>
-                <div class="modal-footer">
-                <a style="cursor: pointer;" class="modal-close waves-effect waves-green btn-flat">Close</a>
+                <p class="center">
+                    <span v-show="langCheck('ind')"> Meyiapkan Ronde Selanjutnya.... </span>
+                    <span v-show="langCheck('en')"> Prepare for next round... </span>
+                </p>
+                <div class="modal-footer green-text">
+
+                <!---<a style="cursor: pointer;" class="modal-close waves-effect waves-green btn-flat">Close</a>--->
                 </div>
             </div>
 
@@ -509,9 +549,39 @@
                     <span v-show="langCheck('ind')">Uang Anda telah ditambah</span>
                     <span v-show="langCheck('en')">Your money hass been increase</span>
                 </p>
+                <div class="center">
+                    <table>
+                        <thead>
+                          <tr>
+                            <th>                    
+                                <span v-show="langCheck('ind')">Nama Pemain</span>
+                                <span v-show="langCheck('en')">Player Name</span>
+                            </th>
+                            <th>
+                                <span v-show="langCheck('ind')">Total</span>
+                                <span v-show="langCheck('en')">Total</span>
+                            </th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>{{ room.dealer.name }}</td>
+                                <td :class="{'red-text' : room.dealer.total > 21 }">{{ room.dealer.total > 21 ? room.dealer.total + ' (Bust)' : room.dealer.total }}</td>
+                              </tr>
+                          <tr v-for="pr in room.players" v-bind:key="pr.id">
+                            <td>{{ pr.name }}</td>
+                            <td :class="{'red-text' : pr.status == 8,'green-text' : pr.status == 7}">{{ pr.total > 21 ? pr.total + ' (Bust)' : pr.total }}</td> 
+                          </tr>
+                        </tbody>
+                      </table>
+                    </div>
                 </div>
+                <p class="center">
+                    <span v-show="langCheck('ind')"> Meyiapkan Ronde Selanjutnya.... </span>
+                    <span v-show="langCheck('en')"> Prepare for next round... </span>
+                </p>
                 <div class="modal-footer">
-                <a style="cursor: pointer;" class="modal-close waves-effect waves-green btn-flat">Close</a>
+                <!---<a style="cursor: pointer;" class="modal-close waves-effect waves-green btn-flat">Close</a>--->
                 </div>
             </div>
 

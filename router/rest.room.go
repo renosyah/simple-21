@@ -239,7 +239,7 @@ func (h *RouterHub) HandlePlayerActionTurnRoom(w http.ResponseWriter, r *http.Re
 		return
 	}
 
-	playerAcc, ok := h.Players[param.PlayerID]
+	_, ok := h.Players[param.PlayerID]
 	if !ok {
 		api.HttpResponseException(w, r, http.StatusNotFound)
 		return
@@ -283,7 +283,6 @@ func (h *RouterHub) HandlePlayerActionTurnRoom(w http.ResponseWriter, r *http.Re
 	if player.Total == 21 {
 
 		player.Status = model.PLAYER_STATUS_OUT
-		playerAcc.Money += player.Bet * 2
 		player.Bet = 0
 		room.EventBroadcast <- model.RoomEventData{
 			Name: model.ROOM_EVENT_ON_PLAYER_BLACKJACK_WIN,
@@ -312,6 +311,26 @@ func (h *RouterHub) HandlePlayerActionTurnRoom(w http.ResponseWriter, r *http.Re
 
 		go func() {
 
+			for {
+
+				if room.Dealer.Total >= 17 {
+					break
+				}
+
+				if room.Dealer.Total < 17 {
+
+					time.Sleep(2 * time.Second)
+					room.givePlayerOneCard(room.Dealer.ID, true)
+
+					room.Dealer.ShowAllCard()
+					room.Dealer.SumUpTotal()
+
+					room.EventBroadcast <- model.RoomEventData{
+						Name: model.ROOM_EVENT_ON_CARD_GIVEN,
+					}
+				}
+			}
+
 			time.Sleep(2 * time.Second)
 			h.EndRound(param.RoomID)
 
@@ -319,7 +338,7 @@ func (h *RouterHub) HandlePlayerActionTurnRoom(w http.ResponseWriter, r *http.Re
 				Name: model.ROOM_EVENT_ON_GAME_END,
 			}
 
-			time.Sleep(5 * time.Second)
+			time.Sleep(10 * time.Second)
 			room.resetRoom()
 			room.EventBroadcast <- model.RoomEventData{
 				Name: model.ROOM_EVENT_ON_GAME_START,

@@ -36,6 +36,9 @@ const PLAYER_STATUS_BUST    = 6
 const PLAYER_STATUS_REWARDED= 7
 const PLAYER_STATUS_LOSE    = 8
 
+// TOAST
+const TOAST_OUT_DURRATION = 60
+
 new Vue({
     el: '#app',
     data() {
@@ -65,12 +68,13 @@ new Vue({
             player_in_room : {
                 id:"",
                 name:"",
-                bet:50,
+                bet:0,
                 cards : [],
                 total_show : 0,
                 total : 0,
                 status :0                    
             },
+            bet_holder : 50,
             add_room : {
                 host_id:"",
                 name:"",
@@ -124,7 +128,7 @@ new Vue({
                 .then(response => {
                     this.is_loading = false
                     if (response.data.status == 507) {
-                        window.M.toast({html: '<b>Server is Full!</b>', classes: 'white green-text'})
+                        window.M.toast({outDuration : TOAST_OUT_DURRATION,html: '<b>Server is Full!</b>', classes: 'white green-text'})
                         return
                     }
                     this.player = response.data.result
@@ -211,7 +215,7 @@ new Vue({
                     }
 
                     if (response.data.status != 200) {
-                        window.M.toast({html: '<b>Failed Create Room!</b>', classes: 'white green-text'})
+                        window.M.toast({outDuration : TOAST_OUT_DURRATION,html: '<b>Failed Create Room!</b>', classes: 'white green-text'})
                         return
                     }
                 })
@@ -224,7 +228,7 @@ new Vue({
             axios.post(this.baseUrl() + "room",JSON.stringify({id:roomId}))
                 .then(response => {
                     if (response.data.status == 404) {
-                        window.M.toast({html: '<b>Room Not Found!</b>', classes: 'white green-text'})
+                        window.M.toast({outDuration : TOAST_OUT_DURRATION,html: '<b>Room Not Found!</b>', classes: 'white green-text'})
                         return
                     }
                     this.room = response.data.result
@@ -258,11 +262,11 @@ new Vue({
         },
         setBet(){
             this.is_loading = true
-            axios.post(this.baseUrl() + "room/setbet",JSON.stringify({player_id : this.player.id, room_id : this.room.id, bet : parseInt(this.player_in_room.bet)}))
+            axios.post(this.baseUrl() + "room/setbet",JSON.stringify({player_id : this.player.id, room_id : this.room.id, bet : parseInt(this.bet_holder)}))
                 .then(response => {
                     this.is_loading = false
                     if (response.data.status == 404) {
-                        window.M.toast({html: '<b>Room Not Found!</b>', classes: 'white green-text'})
+                        window.M.toast({outDuration : TOAST_OUT_DURRATION,html: '<b>Room Not Found!</b>', classes: 'white green-text'})
                         return
                     }
                 })
@@ -277,7 +281,7 @@ new Vue({
                 .then(response => {
                     this.is_loading = false
                     if (response.data.status == 404) {
-                        window.M.toast({html: '<b>Room Not Found!</b>', classes: 'white green-text'})
+                        window.M.toast({outDuration : TOAST_OUT_DURRATION,html: '<b>Room Not Found!</b>', classes: 'white green-text'})
                         return
                     }
                 })
@@ -292,7 +296,7 @@ new Vue({
                 .then(response => {
                     this.is_loading = false
                     if (response.data.status != 200) {
-                        window.M.toast({html: '<b>Failed Delete Room!</b>', classes: 'white green-text'})
+                        window.M.toast({outDuration : TOAST_OUT_DURRATION,html: '<b>Failed Delete Room!</b>', classes: 'white green-text'})
                         return
                     }
                 })
@@ -316,7 +320,7 @@ new Vue({
                 .then(response => {
                     this.is_loading = false
                     if (response.data.status != 200) {
-                        window.M.toast({html: '<b>Failed Purchase!</b>', classes: 'white green-text'})
+                        window.M.toast({outDuration : TOAST_OUT_DURRATION,html: '<b>Failed Purchase!</b>', classes: 'white green-text'})
                         return
                     }
                     this.player.money = response.data.result.money
@@ -332,23 +336,23 @@ new Vue({
                 let event = JSON.parse(evt.data)
                 switch (event.name) {
                     case LOBBY_EVENT_ON_JOIN: 
-                        window.M.toast({html: '<b>' + event.data.name + ' is Join!</b>', classes: 'white green-text'})
+                        window.M.toast({outDuration : TOAST_OUT_DURRATION,html: '<b>' + event.data.name + ' is Join!</b>', classes: 'white green-text'})
                         this.getPlayers()
                         break;
                     case LOBBY_EVENT_ON_LOGOUT: 
-                        window.M.toast({html: '<b>' + event.data.name + ' is Logout!</b>', classes: 'white green-text'})
+                        window.M.toast({outDuration : TOAST_OUT_DURRATION,html: '<b>' + event.data.name + ' is Logout!</b>', classes: 'white green-text'})
                         this.getPlayers()
                         break;
                     case LOBBY_EVENT_ON_DISCONNECTED:
-                        window.M.toast({html: '<b>' + event.data.name + ' is Offline!</b>', classes: 'white green-text'})
+                        window.M.toast({outDuration : TOAST_OUT_DURRATION,html: '<b>' + event.data.name + ' is Offline!</b>', classes: 'white green-text'})
                         this.getPlayers()
                         break;
                     case LOBBY_EVENT_ON_ROOM_CREATED:
-                        window.M.toast({html: '<b>' + event.data.name + ' is Created!</b>', classes: 'white green-text'})
+                        window.M.toast({outDuration : TOAST_OUT_DURRATION,html: '<b>' + event.data.name + ' is Created!</b>', classes: 'white green-text'})
                         this.getRooms()
                         break;
                         case LOBBY_EVENT_ON_ROOM_REMOVE:
-                        window.M.toast({html: '<b>' + event.data.name + ' is Removed!</b>', classes: 'white green-text'})
+                        window.M.toast({outDuration : TOAST_OUT_DURRATION,html: '<b>' + event.data.name + ' is Removed!</b>', classes: 'white green-text'})
                         this.getRooms()
                         break;
                     default: break;
@@ -371,39 +375,39 @@ new Vue({
                 let event = JSON.parse(evt.data)
                 switch (event.name) {
                     case ROOM_EVENT_ON_JOIN:
-                        window.M.toast({html: '<b>' + event.data.name + ' is Join the room!</b>', classes: 'white green-text'})
+                        window.M.toast({outDuration : TOAST_OUT_DURRATION,html: '<b>' + event.data.name + ' is Join the room!</b>', classes: 'white green-text'})
                         this.getRoom(idRoom)
                         break;
                     case ROOM_EVENT_ON_PLAYER_SET_BET:
-                        window.M.toast({html: '<b>' + event.data.name + ' has Set his bet!</b>', classes: 'white green-text'})
+                        //window.M.toast({outDuration : TOAST_OUT_DURRATION,html: '<b>' + event.data.name + ' has Set his bet!</b>', classes: 'white green-text'})
                         this.getRoom(idRoom)
                         break;
                     case ROOM_EVENT_ON_GAME_START:
-                        window.M.toast({html: '<b>game is started!</b>', classes: 'white green-text'})
+                        window.M.toast({outDuration : TOAST_OUT_DURRATION,html: '<b>game is started!</b>', classes: 'white green-text'})
                         this.getRoom(idRoom)
                         break;
                     case ROOM_EVENT_ON_CARD_GIVEN:
-                        window.M.toast({html: '<b>Dealer given card</b>', classes: 'white green-text'})
+                        //window.M.toast({outDuration : TOAST_OUT_DURRATION,html: '<b>Dealer given card</b>', classes: 'white green-text'})
                         this.getRoom(idRoom)
                         break;
                     case ROOM_EVENT_ON_PLAYER_END_TURN:
-                        window.M.toast({html: '<b>' + event.data.name + ' has End Turn!</b>', classes: 'white green-text'})
+                        //window.M.toast({outDuration : TOAST_OUT_DURRATION,html: '<b>' + event.data.name + ' has End Turn!</b>', classes: 'white green-text'})
                         this.getRoom(idRoom)
                         break
                     case ROOM_EVENT_ON_PLAYER_BLACKJACK_WIN:
-                        window.M.toast({html: '<b>' + event.data.name + ' Total Card is 21!</b>', classes: 'white green-text'})
+                        window.M.toast({outDuration : TOAST_OUT_DURRATION,html: '<b>' + event.data.name + ' Total Card is 21!</b>', classes: 'white green-text'})
                         this.getRoom(idRoom)
                         break;
                     case ROOM_EVENT_ON_PLAYER_BUST:
-                        window.M.toast({html: '<b>' + event.data.name + ' has Bust!</b>', classes: 'white green-text'})
+                        window.M.toast({outDuration : TOAST_OUT_DURRATION,html: '<b>' + event.data.name + ' has Bust!</b>', classes: 'white green-text'})
                         this.getRoom(idRoom)
                         break
                     case ROOM_EVENT_ON_GAME_END:
-                        window.M.toast({html: '<b>Round is End!</b>', classes: 'white green-text'})
+                        window.M.toast({outDuration : TOAST_OUT_DURRATION,html: '<b>Round is End!</b>', classes: 'white green-text'})
                         this.getRoom(idRoom)
                         break;
                     case ROOM_EVENT_ON_DISCONNECTED:
-                        window.M.toast({html: '<b>' + event.data.name + ' has Exit room!</b>', classes: 'white green-text'})
+                        window.M.toast({outDuration : TOAST_OUT_DURRATION,html: '<b>' + event.data.name + ' has Exit room!</b>', classes: 'white green-text'})
                         this.getRoom(idRoom)
                         break;
                     default: break;
@@ -447,7 +451,7 @@ new Vue({
         switchLang(lang){
             if ('URLSearchParams' in window) {
                 var searchParams = new URLSearchParams(window.location.search);
-                searchParams.set('lang', name);
+                searchParams.set('lang', lang);
                 window.location.search = searchParams.toString();
             }
         },

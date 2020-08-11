@@ -41,6 +41,7 @@ func (c *RoomPlayer) Copy() RoomPlayer {
 		Total:     c.Total,
 		Status:    c.Status,
 		IsOnline:  c.IsOnline,
+		TurnOrder: c.TurnOrder,
 	}
 }
 

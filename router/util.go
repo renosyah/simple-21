@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"io/ioutil"
 	"net/http"
+	"sort"
 	"time"
 
 	"github.com/asaskevich/govalidator"
@@ -91,22 +92,67 @@ func (h *RouterHub) EndRound(id string) {
 	r.ConnectionMx.Lock()
 	defer r.ConnectionMx.Unlock()
 
-	r.Dealer.ShowAllCard()
-	r.Dealer.SumUpTotal()
+	highscorePlayer := r.highScorePlayer()
 
 	for _, p := range r.RoomPlayers {
-		if p.Total > r.Dealer.Total && p.Total <= 21 {
+
+		// dealer bust
+		// all player win
+		// except who is buts
+		if r.Dealer.Total > 21 && p.Total <= 21 {
+
 			if pAcc, okAcc := h.Players[p.ID]; okAcc {
 				pAcc.Money += p.Bet * 2
 				p.Bet = 0
 				p.Status = model.PLAYER_STATUS_REWARDED
 			}
+
 		} else {
-			p.Bet = 0
-			p.Status = model.PLAYER_STATUS_LOSE
+
+			// if player is 21
+			// win sweet
+			if p.Total == 21 {
+
+				if pAcc, okAcc := h.Players[p.ID]; okAcc {
+					pAcc.Money += (p.Bet * 2) + (p.Bet / 2)
+					p.Bet = 0
+					p.Status = model.PLAYER_STATUS_REWARDED
+				}
+
+				// if player is score is higher
+				// win
+			} else if highscorePlayer.ID == p.ID && p.Total > r.Dealer.Total && p.Total <= 21 {
+
+				if pAcc, okAcc := h.Players[p.ID]; okAcc {
+					pAcc.Money += (p.Bet * 2)
+					p.Bet = 0
+					p.Status = model.PLAYER_STATUS_REWARDED
+				}
+
+				// lose bet
+			} else {
+
+				p.Bet = 0
+				p.Status = model.PLAYER_STATUS_LOSE
+
+			}
 		}
 	}
+}
 
+func (r *RoomsHub) highScorePlayer() model.RoomPlayer {
+
+	players := []model.RoomPlayer{}
+	for _, p := range r.RoomPlayers {
+		players = append(players, model.RoomPlayer{ID: p.ID, Total: p.Total})
+	}
+	players = append(players, model.RoomPlayer{ID: r.Dealer.ID, Total: r.Dealer.Total})
+
+	sort.Slice(players, func(i, j int) bool {
+		return players[i].Total > players[j].Total
+	})
+
+	return players[0]
 }
 
 func (r *RoomsHub) isPlayersStatusSame(status int) bool {

@@ -91,7 +91,8 @@ new Vue({
             host : {
                 name : "",
                 protocol : "",
-                port : ""
+                port : "",
+                ws_protocol : "",
             },
             random_name :"",
             card_groups : []
@@ -337,7 +338,7 @@ new Vue({
                 })
         },
         initLobbyWs(){
-            this.lobby_ws = new WebSocket("ws://" + this.host.name + ":" + this.host.port + "/ws-lobby?id-player=" + this.player.id)
+            this.lobby_ws = new WebSocket(this.baseWsUrl() + "ws-lobby" + "?id-player=" + this.player.id)
             this.lobby_ws.onmessage = (evt) => {
                 let event = JSON.parse(evt.data)
                 switch (event.name) {
@@ -377,7 +378,7 @@ new Vue({
         },
         initRoomWs(idR){
             let idRoom = idR
-            this.room_ws = new WebSocket("ws://" + this.host.name + ":" + this.host.port + "/ws-room?id-player=" + this.player.id + "&id-room=" + idRoom)
+            this.room_ws = new WebSocket(this.baseWsUrl() + "ws-room" + "?id-player=" + this.player.id + "&id-room=" + idRoom)
             this.room_ws.onmessage = (evt) => {
                 let event = JSON.parse(evt.data)
                 switch (event.name) {
@@ -528,10 +529,14 @@ new Vue({
             this.host.name = window.location.hostname
             this.host.port = location.port
             this.host.protocol = location.protocol.concat("//")
+            this.host.ws_protocol = this.host.protocol == "https://" ? "wss://"  : "ws://" 
         },
         baseUrl(){
             return this.host.protocol.concat(this.host.name + ":" + this.host.port + "/")
         },
+        baseWsUrl(){
+            return this.host.ws_protocol.concat(this.host.name + ":" + this.host.port + "/")
+        }
     }
 })
 

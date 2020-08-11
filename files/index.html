@@ -318,10 +318,17 @@
                         <h6 class="green-text">
                             {{ room.name }}
                         </h6>
-                        <a class="waves-effect waves-light btn-large green white-text" @click="switchPage('main-page')">
-                            <span v-show="langCheck('ind')">Keluar Ruangan</span>
-                            <span v-show="langCheck('en')">Exit Room</span>
-                        </a> 
+                        <h6>
+                            <span v-show="langCheck('ind')">Ronde Ke&nbsp;</span>
+                            <span v-show="langCheck('en')">Round&nbsp;</span>
+                            {{ room.round }}  
+                        </h6>
+                        <div  v-show="player_in_room.status == -1"><br />
+                            <a class="waves-effect waves-light btn-large green white-text" @click="switchPage('main-page')">
+                                <span v-show="langCheck('ind')">Keluar Ruangan</span>
+                                <span v-show="langCheck('en')">Exit Room</span>
+                            </a>                        
+                        </div>
                     </div>  
                     <div class="card-panel white">
                         <h6 class="green-text">
@@ -338,7 +345,7 @@
                                     <span v-show="langCheck('ind')">Uang : </span>
                                     <span v-show="langCheck('en')">Money : </span>
                                     $ {{ p.money }} <br>
-                                    Status : {{ p.status == 0 ? 'Ready' : p.status == 1 ? 'Playing' : p.status == 2 ? 'Idle' : p.status == 3 ? 'In Turn' : p.status == 4 ? 'End Turn' : 'Out' }}  
+                                    Status : {{ getPlayerStatus(p) }}  
                                 </p>
                             </li>
                         </ul>
@@ -446,21 +453,15 @@
             <div id="modal-room-bet" class="modal bottom-sheet">
                 <div class="center">
                     <h5 class="green-text">
-                            {{ room.name }}           
+                        <span v-show="langCheck('ind')">Jumlah Taruhan</span>
+                        <span v-show="langCheck('en')">Bet Amount</span>        
                     </h5>
-                    <h6>
-                        <span v-show="langCheck('ind')">Ronde Ke&nbsp;</span>
-                        <span v-show="langCheck('en')">Round&nbsp;</span>
-                        {{ room.round }}  
-                    </h6>
                     <div class="row">
                         <div class="col s1 m2 l3"></div>
                         <div class="center col s10 m8 l6">
-                            <h6 class="red-text" v-show="player.money > 50">
-                                <span v-show="langCheck('ind')">Jumlah Taruhan : </span>
-                                <span v-show="langCheck('en')">Bet Amount : </span>
+                            <h5 class="red-text" v-show="player.money > 50">
                                 $ {{ bet_holder }}                  
-                            </h6>
+                            </h5>
                             <p v-show="player.money < 50"> 
                                 <span v-show="langCheck('ind')">Uang Anda Tidak Cukup!</span>
                                 <span v-show="langCheck('en')">You Dont Have enough money!</span>

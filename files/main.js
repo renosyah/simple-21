@@ -271,6 +271,7 @@ new Vue({
                         window.M.toast({outDuration : TOAST_OUT_DURRATION,html: '<b>Room Not Found!</b>', classes: 'white green-text'})
                         return
                     }
+                    this.bet_holder = this.player.money > 50 ? 50 : 0 
                 })
                 .catch(e => {
                     this.is_loading = false
@@ -448,6 +449,17 @@ new Vue({
                 searchParams.set('page', 'room-page');
                 window.location.search = searchParams.toString();
             }
+        },
+        getPlayerStatus(p){
+            return p.status == PLAYER_STATUS_INVITED ?
+            'Ready' :  p.status == PLAYER_STATUS_SET_BET ? 
+            'Set Bet' : p.status == PLAYER_STATUS_IDLE ? 
+            'Idle' : p.status == PLAYER_STATUS_AT_TURN ? 
+            'In Turn' : p.status == PLAYER_STATUS_FINISH_TURN ? 
+            'End Turn' :  p.status == PLAYER_STATUS_OUT ? 
+            'Out' :  p.status == PLAYER_STATUS_BUST ? 
+            'Bust' : p.status == PLAYER_STATUS_REWARDED ? 
+            'Win' : 'Lose' 
         },
         isPlayerInRoom(roomId){
             

@@ -146,7 +146,7 @@ func (r *RoomsHub) isMineHighThanOther(p *model.RoomPlayer) bool {
 		return false
 	}
 
-	if p.Total < r.Dealer.Total {
+	if p.Total <= r.Dealer.Total {
 		return false
 	}
 

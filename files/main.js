@@ -267,6 +267,7 @@ new Vue({
                 })
         },
         setBet(){
+            window.$("#modal-room-bet").modal('close'); 
             axios.post(this.baseUrl() + "room/setbet",JSON.stringify({player_id : this.player.id, room_id : this.room.id, bet : parseInt(this.bet_holder)}))
                 .then(response => {
                     if (response.data.status == 404) {

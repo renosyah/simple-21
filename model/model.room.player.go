@@ -18,6 +18,7 @@ type (
 		ID        string `json:"id"`
 		Name      string `json:"name"`
 		Bet       int    `json:"bet"`
+		Money     int    `json:"money"`
 		Cards     []Card `json:"cards"`
 		TotalShow int    `json:"total_show"`
 		Total     int    `json:"total"`
@@ -26,12 +27,41 @@ type (
 	}
 )
 
+func (c *RoomPlayer) Copy() RoomPlayer {
+	return RoomPlayer{
+		ID:        c.ID,
+		Name:      c.Name,
+		Bet:       c.Bet,
+		Money:     c.Money,
+		Cards:     c.Cards,
+		TotalShow: c.TotalShow,
+		Total:     c.Total,
+		Status:    c.Status,
+		IsOnline:  c.IsOnline,
+	}
+}
+
 func (p *RoomPlayer) SumUpTotal() {
 	t := 0
+	tshow := 0
 	for _, i := range p.Cards {
+		if i.Show {
+			tshow += i.Value
+		}
 		t += i.Value
 	}
 	p.Total = t
+	p.TotalShow = tshow
+}
+
+func (p *RoomPlayer) ShowAllCard() {
+	nc := []Card{}
+	for _, c := range p.Cards {
+		nc = append(nc, c.Copy(true))
+	}
+
+	p.Cards = nc
+	p.SumUpTotal()
 }
 
 func (p *RoomPlayer) ChangeAsValue(flag int) {

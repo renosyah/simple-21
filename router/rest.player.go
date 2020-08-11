@@ -76,6 +76,23 @@ func (h *RouterHub) HandleDetailPlayer(w http.ResponseWriter, r *http.Request) {
 	api.HttpResponse(w, r, p, http.StatusOK)
 }
 
+func (h *RouterHub) HandleDetailPlayerMoney(w http.ResponseWriter, r *http.Request) {
+	pID := r.FormValue("id-player")
+
+	if pID == "" {
+		api.HttpResponseException(w, r, http.StatusBadRequest)
+		return
+	}
+
+	p, ok := h.Players[pID]
+	if !ok {
+		api.HttpResponseException(w, r, http.StatusNotFound)
+		return
+	}
+
+	api.HttpResponse(w, r, p.Money, http.StatusOK)
+}
+
 func (h *RouterHub) HandleRemovePlayer(w http.ResponseWriter, r *http.Request) {
 	var param model.Player
 

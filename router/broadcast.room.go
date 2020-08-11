@@ -114,7 +114,7 @@ func (h *RouterHub) createRoomHub(room model.Room) *RoomsHub {
 	}
 
 	for _, c := range cards {
-		r.Cards[c.ID] = &c
+		r.Cards[c.ID] = c.CopyPointer()
 	}
 
 	go func() {

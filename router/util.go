@@ -3,7 +3,6 @@ package router
 import (
 	"context"
 	"encoding/json"
-	"fmt"
 	"io/ioutil"
 	"net/http"
 	"time"
@@ -62,8 +61,6 @@ func (r *RoomsHub) givePlayerOneCard(id string, show bool) {
 		break
 	}
 
-	fmt.Println(string(model.ToJson(card)))
-
 	if _, ok := r.Cards[card.ID]; ok {
 		delete(r.Cards, card.ID)
 	}
@@ -73,19 +70,77 @@ func (r *RoomsHub) givePlayerOneCard(id string, show bool) {
 
 		// give it to dealer
 		r.Dealer.Cards = append(r.Dealer.Cards, card)
+		r.Dealer.SumUpTotal()
 		return
 	}
 
 	p.Cards = append(p.Cards, card)
+	p.SumUpTotal()
+}
+
+func (h *RouterHub) EndRound(id string) {
+
+	h.ConnectionMx.Lock()
+	defer h.ConnectionMx.Unlock()
+
+	r, ok := h.Rooms[id]
+	if !ok {
+		return
+	}
+
+	r.ConnectionMx.Lock()
+	defer r.ConnectionMx.Unlock()
+
+	r.Dealer.ShowAllCard()
+	r.Dealer.SumUpTotal()
+
+	for _, p := range r.RoomPlayers {
+		if p.Total > r.Dealer.Total {
+			if pAcc, okAcc := h.Players[p.ID]; okAcc {
+				pAcc.Money += p.Bet * 2
+				p.Bet = 0
+			}
+		} else {
+			p.Bet = 0
+		}
+	}
+
 }
 
 func (r *RoomsHub) isPlayersStatusSame(status int) bool {
 	for _, i := range r.RoomPlayers {
-		if i.Status != status {
+		if i.Status != status && i.Status != model.PLAYER_STATUS_BUST {
 			return false
 		}
 	}
 	return true
+}
+
+func (r *RoomsHub) resetRoom() {
+	r.ConnectionMx.Lock()
+	defer r.ConnectionMx.Unlock()
+
+	cards := model.NewCards()
+	r.Cards = make(map[string]*model.Card)
+	for _, c := range cards {
+		r.Cards[c.ID] = c.CopyPointer()
+	}
+
+	r.TurnPost = 0
+
+	r.Dealer.Status = model.PLAYER_STATUS_IDLE
+	r.Dealer.Bet = 0
+	r.Dealer.Cards = []model.Card{}
+	r.Dealer.Total = 0
+	r.Dealer.TotalShow = 0
+
+	for _, i := range r.RoomPlayers {
+		i.Status = model.PLAYER_STATUS_IDLE
+		i.Bet = 0
+		i.Cards = []model.Card{}
+		i.Total = 0
+		i.TotalShow = 0
+	}
 }
 
 func ParseBodyData(ctx context.Context, r *http.Request, data interface{}) error {

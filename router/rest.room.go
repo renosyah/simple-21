@@ -72,7 +72,11 @@ func (h *RouterHub) HandleDetailRoom(w http.ResponseWriter, r *http.Request) {
 	players := []model.RoomPlayer{}
 
 	for _, p := range room.RoomPlayers {
-		players = append(players, *p)
+		pcopy := p.Copy()
+		if pAcc, ok := h.Players[p.ID]; ok {
+			pcopy.Money = pAcc.Money
+		}
+		players = append(players, pcopy)
 	}
 
 	sort.Slice(players, func(i, j int) bool {
@@ -206,12 +210,125 @@ func (h *RouterHub) HandlePlaceBet(w http.ResponseWriter, r *http.Request) {
 			}
 			room.ConnectionMx.Unlock()
 
+			room.EventBroadcast <- model.RoomEventData{
+				Name: model.ROOM_EVENT_ON_GAME_START,
+			}
+
 		}()
 
 		room.EventBroadcast <- model.RoomEventData{
 			Name: model.ROOM_EVENT_ON_GAME_START,
 		}
 
+	}
+
+	api.HttpResponse(w, r, true, http.StatusOK)
+}
+
+func (h *RouterHub) HandlePlayerActionTurnRoom(w http.ResponseWriter, r *http.Request) {
+	var param model.RoomTurn
+
+	err := ParseBodyData(r.Context(), r, &param)
+	if err != nil {
+		w.WriteHeader(http.StatusBadRequest)
+		return
+	}
+
+	if param.PlayerID == "" || param.RoomID == "" {
+		api.HttpResponseException(w, r, http.StatusBadRequest)
+		return
+	}
+
+	playerAcc, ok := h.Players[param.PlayerID]
+	if !ok {
+		api.HttpResponseException(w, r, http.StatusNotFound)
+		return
+	}
+
+	room, ok := h.Rooms[param.RoomID]
+	if !ok {
+		api.HttpResponseException(w, r, http.StatusNotFound)
+		return
+	}
+
+	player, ok := room.RoomPlayers[param.PlayerID]
+	if !ok {
+		api.HttpResponseException(w, r, http.StatusNotFound)
+		return
+	}
+
+	if param.Choosed == model.ROOM_TURN_CHOOSE_HIT {
+
+		room.givePlayerOneCard(param.PlayerID, true)
+
+		room.EventBroadcast <- model.RoomEventData{
+			Name: model.ROOM_EVENT_ON_CARD_GIVEN,
+		}
+
+	}
+
+	room.ConnectionMx.Lock()
+	defer room.ConnectionMx.Unlock()
+
+	player.Status = model.PLAYER_STATUS_FINISH_TURN
+	player.SumUpTotal()
+
+	room.TurnPost++
+	if room.TurnPost <= len(room.TurnsOrder)-1 {
+		if pTurn, ok := room.RoomPlayers[room.TurnsOrder[room.TurnPost]]; ok {
+			pTurn.Status = model.PLAYER_STATUS_AT_TURN
+		}
+	}
+
+	// bust
+	if player.Total == 21 {
+
+		player.Status = model.PLAYER_STATUS_OUT
+		playerAcc.Money += player.Bet * 2
+		player.Bet = 0
+		room.EventBroadcast <- model.RoomEventData{
+			Name: model.ROOM_EVENT_ON_PLAYER_BLACKJACK_WIN,
+			Data: model.Player{Name: player.Name},
+		}
+
+	} else if player.Total > 21 {
+
+		player.Status = model.PLAYER_STATUS_BUST
+		player.Bet = 0
+		room.EventBroadcast <- model.RoomEventData{
+			Name: model.ROOM_EVENT_ON_PLAYER_BUST,
+			Data: model.Player{Name: player.Name},
+		}
+
+	} else {
+
+		room.EventBroadcast <- model.RoomEventData{
+			Name: model.ROOM_EVENT_ON_PLAYER_END_TURN,
+			Data: model.Player{Name: player.Name},
+		}
+	}
+
+	// end round sum up
+	if room.isPlayersStatusSame(model.PLAYER_STATUS_FINISH_TURN) {
+
+		go func() {
+
+			time.Sleep(2 * time.Second)
+			h.EndRound(param.RoomID)
+
+			room.EventBroadcast <- model.RoomEventData{
+				Name: model.ROOM_EVENT_ON_GAME_END,
+			}
+
+			time.Sleep(5 * time.Second)
+			room.resetRoom()
+			room.EventBroadcast <- model.RoomEventData{
+				Name: model.ROOM_EVENT_ON_GAME_START,
+			}
+		}()
+
+		api.HttpResponse(w, r, true, http.StatusOK)
+		return
 	}
 
 	api.HttpResponse(w, r, true, http.StatusOK)

@@ -56,7 +56,7 @@ func (h *RoomsHub) setPlayerOnlineStatus(player model.Player, isOnline bool, bro
 
 	p.IsOnline = isOnline
 
-	if p.Status == model.PLAYER_STATUS_SET_BET || p.Status == model.PLAYER_STATUS_IDLE {
+	if p.Status == model.PLAYER_STATUS_SET_BET || p.Status == model.PLAYER_STATUS_AT_TURN {
 		p.Status = model.PLAYER_STATUS_OUT
 	}
 

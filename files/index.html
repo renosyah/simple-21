@@ -300,7 +300,10 @@
                                 <span class="title">
                                     {{ p.name }}
                                 </span>
-                                <p>  Status : {{ p.status == 0 ? 'Ready' : p.status == 1 ? 'Playing' : p.status == 2 ? 'Idle' : p.status == 3 ? 'In Turn' : 'Out' }}  </p>
+                                <p>  
+                                    $ {{ p.money }} <br>
+                                    Status : {{ p.status == 0 ? 'Ready' : p.status == 1 ? 'Playing' : p.status == 2 ? 'Idle' : p.status == 3 ? 'In Turn' : p.status == 4 ? 'End Turn' : 'Out' }}  
+                                </p>
                             </li>
                         </ul>
                     </div>
@@ -403,7 +406,7 @@
                         <span v-show="langCheck('en')">Settle Your Bet</span>                    
                     </h5>
                     <div class="row">
-                        <div class="col s1 m8 l3"></div>
+                        <div class="col s1 m2 l3"></div>
                         <div class="center col s10 m8 l6">
                             <h5 class="red-text">
                                 $ {{ player_in_room.bet }}                  
@@ -433,12 +436,12 @@
                         <span v-show="langCheck('ind')">Giliran Anda</span>
                         <span v-show="langCheck('en')">Your Turn</span>                    
                     </h5>
-                    <a class="waves-effect waves-light btn-large green white-text" style="text-transform: none;">
+                    <a class="waves-effect waves-light btn-large green white-text" style="text-transform: none;" @click="setAction(0)">
                         <span v-show="langCheck('ind')">Minta Kartu!</span>
                         <span v-show="langCheck('en')">Hit Me!</span>
                     </a>
                     &nbsp;&nbsp;
-                    <a class="waves-effect waves-light btn-large white green-text" style="text-transform: none;">
+                    <a class="waves-effect waves-light btn-large white green-text" style="text-transform: none;" @click="setAction(1)">
                         <span v-show="langCheck('ind')">Aku Tinggal!</span>
                         <span v-show="langCheck('en')">I'am Stay!</span>
                     </a>
@@ -471,6 +474,10 @@
     const LOBBY_EVENT_ON_ROOM_CREATED = "LOBBY_EVENT_ON_ROOM_CREATED"
 	const LOBBY_EVENT_ON_ROOM_REMOVE  = "LOBBY_EVENT_ON_ROOM_REMOVED"
     const ROOM_EVENT_ON_PLAYER_SET_BET  = "ROOM_EVENT_ON_PLAYER_SET_BET"
+    const ROOM_EVENT_ON_PLAYER_END_TURN = "ROOM_EVENT_ON_PLAYER_END_TURN"
+    const ROOM_EVENT_ON_GAME_END = "ROOM_EVENT_ON_GAME_END"
+    const ROOM_EVENT_ON_PLAYER_BLACKJACK_WIN = "ROOM_EVENT_ON_PLAYER_BLACKJACK_WIN"
+    const ROOM_EVENT_ON_PLAYER_BUST = "ROOM_EVENT_ON_PLAYER_BUST"
 	const ROOM_EVENT_ON_GAME_START   = "ROOM_EVENT_ON_GAME_START"
 	const ROOM_EVENT_ON_CARD_GIVEN   = "ROOM_EVENT_ON_CARD_GIVEN"
 
@@ -561,7 +568,7 @@
         watch: {
             player_in_room : (val) => {
                 window.$("#modal-room-action").modal(val.status == PLAYER_STATUS_AT_TURN ? 'open' : 'close');
-                window.$("#modal-room-bet").modal(val.status == PLAYER_STATUS_INVITED || val.status == PLAYER_STATUS_IDLE ? 'open' : 'close');
+                window.$("#modal-room-bet").modal(val.status == PLAYER_STATUS_INVITED || val.status == PLAYER_STATUS_IDLE ? 'open' : 'close');    
             }
         },
         computed : {
@@ -628,6 +635,15 @@
                         console.log(e)
                     })
             },
+            getPlayerMoney(){
+                axios.get(this.baseUrl() + "player/money" + "?id-player=" + this.player.id)
+                    .then(response => {
+                        this.player.money = response.data.result
+                    })
+                    .catch(e => {
+                        console.log(e)
+                    })
+            },
             exit(){
                 this.lobby_ws.close()
                 this.is_loading = true
@@ -683,10 +699,10 @@
                 axios.get(this.baseUrl() + "room/player" + "?id-player="+this.player.id + "&id-room="+roomId)
                     .then(response => {
                         if (response.data.status == 404) {
-                            window.M.toast({html: '<b>Player Not Found!</b>', classes: 'white green-text'})
                             return
                         }
                         this.player_in_room = response.data.result
+                        this.getPlayerMoney()
                     })
                     .catch(e => {
                         console.log(e)
@@ -704,6 +720,21 @@
             setBet(){
                 this.is_loading = true
                 axios.post(this.baseUrl() + "room/setbet",JSON.stringify({player_id : this.player.id, room_id : this.room.id, bet : parseInt(this.player_in_room.bet)}))
+                    .then(response => {
+                        this.is_loading = false
+                        if (response.data.status == 404) {
+                            window.M.toast({html: '<b>Room Not Found!</b>', classes: 'white green-text'})
+                            return
+                        }
+                    })
+                    .catch(e => {
+                        this.is_loading = false
+                        console.log(e)
+                    })                
+            },
+            setAction(action){
+                this.is_loading = true
+                axios.post(this.baseUrl() + "room/action",JSON.stringify({player_id : this.player.id, room_id : this.room.id, choosed : action}))
                     .then(response => {
                         this.is_loading = false
                         if (response.data.status == 404) {
@@ -788,6 +819,22 @@
                             break;
                         case ROOM_EVENT_ON_CARD_GIVEN:
                             window.M.toast({html: '<b>Dealer given card</b>', classes: 'white green-text'})
+                            this.getRoom(idRoom)
+                            break;
+                        case ROOM_EVENT_ON_PLAYER_END_TURN:
+                            window.M.toast({html: '<b>' + event.data.name + ' has End Turn!</b>', classes: 'white green-text'})
+                            this.getRoom(idRoom)
+                            break
+                        case ROOM_EVENT_ON_PLAYER_BLACKJACK_WIN:
+                            window.M.toast({html: '<b>' + event.data.name + ' Total Card is 21!</b>', classes: 'white green-text'})
+                            this.getRoom(idRoom)
+                            break;
+                        case ROOM_EVENT_ON_PLAYER_BUST:
+                            window.M.toast({html: '<b>' + event.data.name + ' has Bust!</b>', classes: 'white green-text'})
+                            this.getRoom(idRoom)
+                            break
+                        case ROOM_EVENT_ON_GAME_END:
+                            window.M.toast({html: '<b>Round is End!</b>', classes: 'white green-text'})
                             this.getRoom(idRoom)
                             break;
                         case ROOM_EVENT_ON_DISCONNECTED:

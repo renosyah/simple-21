@@ -28,6 +28,16 @@ func (c *Card) Copy(show bool) Card {
 		Image: c.Image,
 	}
 }
+func (c *Card) CopyPointer() *Card {
+	return &Card{
+		ID:    c.ID,
+		Label: c.Label,
+		Value: c.Value,
+		Group: c.Group,
+		Show:  c.Show,
+		Image: c.Image,
+	}
+}
 
 func NewCards() []Card {
 	var cards []Card

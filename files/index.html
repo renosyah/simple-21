@@ -360,7 +360,7 @@
                                     <span v-show="langCheck('en')">PLAYER</span>
                                 </h6>
                                 <ul class="collection" v-for="(r,i) in room.players" v-bind:key="i">
-                                    <li class="collection-item avatar" :style="{'border-style': 'solid','border-color': r.status == 3 ? 'green' : 'white'}">
+                                    <li class="collection-item avatar" :style="{'border-style': 'solid','border-color': r.status == 3 ? 'green' : r.status == 6 ? 'red' : 'white'}">
                                         <i class="material-icons circle green">account_circle</i>
                                         <span class="title">{{ r.name }} </span>
                                         <p> Bet : $ {{ r.bet }} &nbsp;&nbsp; Total : {{ r.total_show }}<br /><br /> </p>
@@ -418,12 +418,12 @@
                         <div class="col s1 m2 l3"></div>
                     </div>
                     <br />
-                    <a class="waves-effect waves-light btn-large green white-text" style="text-transform: none;" :disabled="player_in_room.bet == 0" @click="setBet">
+                    <a class="waves-effect waves-light btn-large green white-text" style="text-transform: none;margin-top: 10px;" :disabled="player_in_room.bet == 0" @click="setBet">
                         <span v-show="langCheck('ind')">Pasang Taruhan</span>
                         <span v-show="langCheck('en')">Set Bet</span>
                     </a>
                     &nbsp;&nbsp;
-                    <a class="waves-effect waves-light btn-large white green-text" @click="switchPage('main-page')">
+                    <a class="waves-effect waves-light btn-large white green-text" style="text-transform: none;margin-top: 10px;" @click="switchPage('main-page')">
                         <span v-show="langCheck('ind')">Keluar Ruangan</span>
                         <span v-show="langCheck('en')">Exit Room</span>
                     </a> 
@@ -436,12 +436,12 @@
                         <span v-show="langCheck('ind')">Giliran Anda</span>
                         <span v-show="langCheck('en')">Your Turn</span>                    
                     </h5>
-                    <a class="waves-effect waves-light btn-large green white-text" style="text-transform: none;" @click="setAction(0)">
+                    <a class="waves-effect waves-light btn-large green white-text" style="text-transform: none;margin-top: 10px;" @click="setAction(0)">
                         <span v-show="langCheck('ind')">Minta Kartu!</span>
                         <span v-show="langCheck('en')">Hit Me!</span>
                     </a>
                     &nbsp;&nbsp;
-                    <a class="waves-effect waves-light btn-large white green-text" style="text-transform: none;" @click="setAction(1)">
+                    <a class="waves-effect waves-light btn-large white green-text" style="text-transform: none;margin-top: 10px;" @click="setAction(1)">
                         <span v-show="langCheck('ind')">Aku Tinggal!</span>
                         <span v-show="langCheck('en')">I'am Stay!</span>
                     </a>

@@ -283,17 +283,14 @@ new Vue({
                 })                
         },
         setAction(action){
-            this.is_loading = true
             axios.post(this.baseUrl() + "room/action",JSON.stringify({player_id : this.player.id, room_id : this.room.id, choosed : action}))
                 .then(response => {
-                    this.is_loading = false
                     if (response.data.status == 404) {
                         window.M.toast({outDuration : TOAST_OUT_DURRATION,html: '<b>Room Not Found!</b>', classes: 'white green-text'})
                         return
                     }
                 })
                 .catch(e => {
-                    this.is_loading = false
                     console.log(e)
                 })                
         },
@@ -344,15 +341,15 @@ new Vue({
                 let event = JSON.parse(evt.data)
                 switch (event.name) {
                     case LOBBY_EVENT_ON_JOIN: 
-                        window.M.toast({outDuration : TOAST_OUT_DURRATION,html: '<b>' + event.data.name + ' is Join!</b>', classes: 'white green-text'})
+                        //window.M.toast({outDuration : TOAST_OUT_DURRATION,html: '<b>' + event.data.name + ' is Join!</b>', classes: 'white green-text'})
                         this.getPlayers()
                         break;
                     case LOBBY_EVENT_ON_LOGOUT: 
-                        window.M.toast({outDuration : TOAST_OUT_DURRATION,html: '<b>' + event.data.name + ' is Logout!</b>', classes: 'white green-text'})
+                        //window.M.toast({outDuration : TOAST_OUT_DURRATION,html: '<b>' + event.data.name + ' is Logout!</b>', classes: 'white green-text'})
                         this.getPlayers()
                         break;
                     case LOBBY_EVENT_ON_DISCONNECTED:
-                        window.M.toast({outDuration : TOAST_OUT_DURRATION,html: '<b>' + event.data.name + ' is Offline!</b>', classes: 'white green-text'})
+                        //window.M.toast({outDuration : TOAST_OUT_DURRATION,html: '<b>' + event.data.name + ' is Offline!</b>', classes: 'white green-text'})
                         this.getPlayers()
                         break;
                     case LOBBY_EVENT_ON_ROOM_CREATED:
@@ -390,7 +387,7 @@ new Vue({
                 let event = JSON.parse(evt.data)
                 switch (event.name) {
                     case ROOM_EVENT_ON_JOIN:
-                        window.M.toast({outDuration : TOAST_OUT_DURRATION,html: '<b>' + event.data.name + ' is Join the room!</b>', classes: 'white green-text'})
+                        //window.M.toast({outDuration : TOAST_OUT_DURRATION,html: '<b>' + event.data.name + ' is Join the room!</b>', classes: 'white green-text'})
                         this.getRoom(idRoom)
                         break;
                     case ROOM_EVENT_ON_PLAYER_SET_BET:
@@ -428,7 +425,7 @@ new Vue({
                         this.getRoom(idRoom)
                         break;
                     case ROOM_EVENT_ON_DISCONNECTED:
-                        window.M.toast({outDuration : TOAST_OUT_DURRATION,html: '<b>' + event.data.name + ' has Exit room!</b>', classes: 'white green-text'})
+                        //window.M.toast({outDuration : TOAST_OUT_DURRATION,html: '<b>' + event.data.name + ' has Exit room!</b>', classes: 'white green-text'})
                         this.getRoom(idRoom)
                         break;
                     default: break;

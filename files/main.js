@@ -338,6 +338,7 @@ new Vue({
                 })
         },
         initLobbyWs(){
+            this.is_loading = true
             this.lobby_ws = new WebSocket(this.baseWsUrl() + "ws-lobby" + "?id-player=" + this.player.id)
             this.lobby_ws.onmessage = (evt) => {
                 let event = JSON.parse(evt.data)
@@ -366,17 +367,23 @@ new Vue({
                 }
             }
             this.lobby_ws.onopen = () => {
+                this.is_loading = false
                 this.getPlayers()
                 this.getRooms()
                 this.getMoneys()
                 this.cardsGroup()                     
             }
+            this.lobby_ws.onclose = () => {
+                    
+            }
             this.lobby_ws.onerror = (e) => {
                 console.log(e)
+                this.is_loading = false
                 this.is_online = false
             }
         },
         initRoomWs(idR){
+            this.is_loading = true
             let idRoom = idR
             this.room_ws = new WebSocket(this.baseWsUrl() + "ws-room" + "?id-player=" + this.player.id + "&id-room=" + idRoom)
             this.room_ws.onmessage = (evt) => {
@@ -428,15 +435,17 @@ new Vue({
                 }
             }
             this.room_ws.onopen = () => {
+                this.is_loading = false
                 this.getRoom(idRoom)
-            };
+            }
             this.room_ws.onclose = () => {
                     
-            };
+            }
             this.room_ws.onerror = (e) => {
                 console.log(e)
+                this.is_loading = false
                 this.is_online = false
-            };
+            }
         },
         randomName(title){
             axios.get(this.baseUrl() + "random-name" + "?title="+title)

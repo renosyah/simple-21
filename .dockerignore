@@ -8,3 +8,4 @@ cockroach-data/
 bin/
 vendor/
 design/
+img/

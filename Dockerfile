@@ -5,13 +5,11 @@ WORKDIR /go/src/github.com/renosyah/simple-21
 COPY . .
 RUN CGO_ENABLED=0 GOOS=linux go build -o main .
 RUN rm -rf /api
-RUN rm -rf /auth
 RUN rm -rf /cmd
 RUN rm -rf /model
 RUN rm -rf /router
 RUN rm -rf /vendor
 RUN rm -rf /util
-RUN rm -rf /sql
 RUN rm .dockerignore
 RUN rm .gitignore
 RUN rm Dockerfile

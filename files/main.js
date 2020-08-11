@@ -105,6 +105,7 @@ new Vue({
     mounted () {
         window.$('.dropdown-trigger').dropdown()
         window.$('.modal').modal({opacity:0.1,dismissible: false,preventScrolling:false})
+        window.$('.sidenav').sidenav();
         this.initPlayer()  
         this.randomName("yes")      
     },

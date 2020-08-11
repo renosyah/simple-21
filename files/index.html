@@ -89,7 +89,7 @@
                                 </label>   
                             </div>
                         </div>
-                        <div class="col s2 m2 l2">
+                        <div class="center col s2 m2 l2">
                             <br />
                             <a style="cursor: pointer;" @click="randomName('');add_room.name = random_name"><i class="small material-icons green-text">casino</i></a>
                         </div>
@@ -311,10 +311,68 @@
 
         <!---------ROOM PAGE---------->
         <div v-show="getPageName == 'room-page'">
+            <div class="navbar-fixed hide-on-large-only">
+                <nav>
+                    <div class="nav-wrapper">
+                        <a class="center brand-logo green-text" style="font-size: 18px;">&nbsp;{{ room.name }}</a>
+                        <ul class="left">
+                            <li>
+                                <a style="cursor: pointer;" data-target="room-nav" class="sidenav-trigger"><i class="material-icons green-text">menu</i></a>
+                            </li>
+                        </ul>
+                    </div>
+                </nav>
+            </div>
+            <ul id="room-nav" class="sidenav" class="hide-on-large-only custom-green">
+                <li>
+                    <div class="container">
+                        <div class="card-panel white center">                     
+                            <h6 class="green-text">
+                                {{ room.name }}
+                            </h6>
+                            <h6>
+                                <span v-show="langCheck('ind')">Ronde Ke&nbsp;</span>
+                                <span v-show="langCheck('en')">Round&nbsp;</span>
+                                {{ room.round }}  
+                            </h6>
+                            <div  v-show="player_in_room.status == -1"><br />
+                                <a class="waves-effect waves-light btn-large green white-text" @click="switchPage('main-page')">
+                                    <span v-show="langCheck('ind')">Keluar Ruangan</span>
+                                    <span v-show="langCheck('en')">Exit Room</span>
+                                </a>                        
+                            </div>
+                        </div> 
+                    </div>
+                </li>
+                <li>
+                    <div class="container">
+                        <div class="card-panel white">
+                            <h6 class="green-text">
+                                <span v-show="langCheck('ind')">Pemain</span>
+                                <span v-show="langCheck('en')">Players</span>
+                            </h6>
+                            <ul class="collection" v-for="p in room.players" v-bind:key="p.id">
+                                <li class="collection-item avatar">
+                                    <i class="material-icons circle green">account_circle</i>
+                                    <span class="title">
+                                        {{ p.name }}
+                                    </span>
+                                    <p>  
+                                        <span v-show="langCheck('ind')">Uang : </span>
+                                        <span v-show="langCheck('en')">Money : </span>
+                                        $ {{ p.money }} <br>
+                                        Status : {{ getPlayerStatus(p) }}  
+                                    </p>
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+                </li>
+            </ul>
 
             <div class="row">
                 <div class="col l3 hide-on-med-and-down">
-                    <div class="card-panel white center ">                     
+                    <div class="card-panel white center">                     
                         <h6 class="green-text">
                             {{ room.name }}
                         </h6>
@@ -473,12 +531,12 @@
                         <div class="col s1 m2 l3"></div>
                     </div>
                     
-                    <a class="waves-effect waves-light btn-large green white-text" style="text-transform: none;margin-top: 10px;" :disabled="bet_holder == 0" @click="setBet" v-show="player.money >= 50">
+                    <a class="waves-effect waves-light btn  green white-text" style="text-transform: none;margin-top: 10px;" :disabled="bet_holder == 0" @click="setBet" v-show="player.money >= 50">
                         <span v-show="langCheck('ind')">Pasang Taruhan</span>
                         <span v-show="langCheck('en')">Set Bet</span>
                     </a>
                     &nbsp;&nbsp;
-                    <a class="waves-effect waves-light btn-large white green-text" style="text-transform: none;margin-top: 10px;" @click="switchPage('main-page')">
+                    <a class="waves-effect waves-light btn  white green-text" style="text-transform: none;margin-top: 10px;" @click="switchPage('main-page')">
                         <span v-show="langCheck('ind')">Keluar Ruangan</span>
                         <span v-show="langCheck('en')">Exit Room</span>
                     </a> 

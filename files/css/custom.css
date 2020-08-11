@@ -13,10 +13,26 @@
     transform: scale(1.2);
     transition: 0.15s all ease;
 }
+ 
+.nav-wrapper {
+    background-color: #ffffff !important;
+}
+
+.sidenav {
+    background-color: #2BAE66FF  !important;
+}
+
+.green-text {
+    color: #2BAE66FF !important; 
+}
+
+.custom-green {
+    background-color: #2BAE66FF !important; 
+}
 
 #bg {
     position: fixed;
-    background-color: #2BAE66FF;
+    background-color: #2BAE66FF !important; 
     background-clip: border-box;
     background-repeat: no-repeat;
     background-size: cover;

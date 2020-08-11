@@ -313,7 +313,6 @@ func (h *RouterHub) HandlePlayerActionTurnRoom(w http.ResponseWriter, r *http.Re
 
 	if player.Total == 21 {
 
-		player.Status = model.PLAYER_STATUS_REWARDED
 		evtNm = model.ROOM_EVENT_ON_PLAYER_BLACKJACK_WIN
 
 	} else if player.Total > 21 {

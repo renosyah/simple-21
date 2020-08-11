@@ -267,10 +267,8 @@ new Vue({
                 })
         },
         setBet(){
-            this.is_loading = true
             axios.post(this.baseUrl() + "room/setbet",JSON.stringify({player_id : this.player.id, room_id : this.room.id, bet : parseInt(this.bet_holder)}))
                 .then(response => {
-                    this.is_loading = false
                     if (response.data.status == 404) {
                         window.M.toast({outDuration : TOAST_OUT_DURRATION,html: '<b>Room Not Found!</b>', classes: 'white green-text'})
                         return
@@ -278,7 +276,6 @@ new Vue({
                     this.bet_holder = this.player.money > 50 ? 50 : 0 
                 })
                 .catch(e => {
-                    this.is_loading = false
                     console.log(e)
                 })                
         },

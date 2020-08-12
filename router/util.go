@@ -180,7 +180,6 @@ func (h *RouterHub) EndRound(id string) {
 
 			if pAcc, okAcc := h.Players[p.ID]; okAcc {
 				pAcc.Money += p.Bet * 2
-				p.Bet = 0
 				p.Status = model.PLAYER_STATUS_REWARDED
 			}
 
@@ -192,7 +191,6 @@ func (h *RouterHub) EndRound(id string) {
 
 				if pAcc, okAcc := h.Players[p.ID]; okAcc {
 					pAcc.Money += (p.Bet * 2) + (p.Bet / 2)
-					p.Bet = 0
 					p.Status = model.PLAYER_STATUS_REWARDED
 				}
 
@@ -202,7 +200,6 @@ func (h *RouterHub) EndRound(id string) {
 
 				if pAcc, okAcc := h.Players[p.ID]; okAcc {
 					pAcc.Money += (p.Bet * 2)
-					p.Bet = 0
 					p.Status = model.PLAYER_STATUS_REWARDED
 				}
 
@@ -218,6 +215,7 @@ func (h *RouterHub) EndRound(id string) {
 
 	scoreRound := r.Round
 	r.Scores[scoreRound] = model.RecordScore(scoreRound, r.Dealer, r.RoomPlayers)
+
 	r.Round++
 }
 

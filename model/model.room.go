@@ -28,4 +28,8 @@ type (
 		ID       string `json:"id"`
 		PlayerID string `json:"player_id"`
 	}
+	RoomScore struct {
+		Name   string  `json:"name"`
+		Scores []Score `json:"scores"`
+	}
 )

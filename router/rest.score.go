@@ -31,5 +31,10 @@ func (h *RouterHub) HandleListRoomScore(w http.ResponseWriter, r *http.Request) 
 		return scores[i].Round < scores[j].Round
 	})
 
-	api.HttpResponse(w, r, scores, http.StatusOK)
+	rscore := model.RoomScore{
+		Name:   room.Room.Name,
+		Scores: scores,
+	}
+
+	api.HttpResponse(w, r, rscore, http.StatusOK)
 }

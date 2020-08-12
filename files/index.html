@@ -305,8 +305,6 @@
                                 <li class="collection-item avatar">
                                     <i class="material-icons circle green">group</i>
                                     <span class="title">
-                                        <span v-show="langCheck('ind')">Ruangan</span>
-                                        <span v-show="langCheck('en')">Room</span>
                                     {{ r.name }}</span>
                                     <br />
                                     <span v-show="langCheck('ind')">Jumlah Pemain : </span>
@@ -331,6 +329,88 @@
             </div>
         </div>
 
+         <!---------ROOM PAGE---------->
+         <div v-show="getPageName == 'score-page'">
+            <nav>
+                <div class="nav-wrapper">
+                    <a class="center brand-logo green-text" style="font-size: 18px;">
+                        &nbsp;{{ room_score.name }}
+                    </a>
+                </div>
+            </nav>
+            <div class="container"> 
+                <div class="row">
+                    <div v-for="(roomsc,idx) in room_score.scores" v-bind:key="idx">
+                        <div class="col s12 m12 l12">
+                            <div class="card-panel white">
+                                <h4 class="center">
+                                    <span v-show="langCheck('ind')">Ronde Ke</span>
+                                    <span v-show="langCheck('en')">Score Board</span>
+                                    &nbsp; : {{ roomsc.round }}
+                                </h4>
+                                <div class="center">
+                                    <table>
+                                        <thead>
+                                            <tr>
+                                                <th>                    
+                                                    <span v-show="langCheck('ind')">Nama</span>
+                                                    <span v-show="langCheck('en')">Name</span>
+                                                </th>
+                                                <th>
+                                                    <span v-show="langCheck('ind')">Taruhan</span>
+                                                    <span v-show="langCheck('en')">Bet</span>
+                                                </th>
+                                                <th>                    
+                                                    <span v-show="langCheck('ind')">Total</span>
+                                                    <span v-show="langCheck('en')">Card</span>
+                                                </th>
+                                                <th>
+                                                    <span v-show="langCheck('ind')">Status</span>
+                                                    <span v-show="langCheck('en')">Status</span>
+                                                </th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <tr>
+                                                <th>                    
+                                                    {{ roomsc.dealer.name }}
+                                                </th>
+                                                <th>
+                                                     -
+                                                </th>
+                                                <th :class="{'red-text' : roomsc.dealer.total > 21 }">
+                                                    {{ roomsc.dealer.total > 21 ? roomsc.dealer.total + ' (Bust)' : roomsc.dealer.total }}    
+                                                </th>
+                                                <th>
+                                                    -
+                                                </th>
+                                            </tr>
+                                            <tr v-for="(p,i) in roomsc.players" v-bind:key="i">
+                                                <th>                    
+                                                    {{ p.name }}
+                                                </th>
+                                                <th>
+                                                    $ {{ p.bet }}
+                                                </th>
+                                                <th :class="{'red-text' : p.total > 21 }">
+                                                    {{ p.total > 21 ? p.total + ' (Bust)' : p.total }}    
+                                                </th>
+                                                <th>
+                                                    {{ getPlayerStatus(p) }}
+                                                </th>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                            <br /><br />
+                        </div>
+                    </div>                
+                </div>
+            </div>
+
+
+         </div>
 
         <!---------ROOM PAGE---------->
         <div v-show="getPageName == 'room-page'">
@@ -358,7 +438,13 @@
                                 <span v-show="langCheck('en')">Round&nbsp;</span>
                                 {{ room.round }}  
                             </h6>
-                            <div  v-show="player_in_room.status == -1"><br />
+                            <h6>
+                                <a href="#" class="green-text" @click="newPage('score-page')">
+                                    <span v-show="langCheck('ind')">Skor</span>
+                                    <span v-show="langCheck('en')">Score</span>
+                                </a> 
+                            </h6>
+                            <div v-show="player_in_room.status == -1"><br />
                                 <a class="waves-effect waves-light btn-large green white-text" @click="switchPage('main-page')">
                                     <span v-show="langCheck('ind')">Keluar Ruangan</span>
                                     <span v-show="langCheck('en')">Exit Room</span>
@@ -404,6 +490,14 @@
                             <span v-show="langCheck('en')">Round&nbsp;</span>
                             {{ room.round }}  
                         </h6>
+                        <div>
+                            <h6>
+                                <a href="#" class="green-text" @click="newPage('score-page')">
+                                    <span v-show="langCheck('ind')">Skor</span>
+                                    <span v-show="langCheck('en')">Score</span>
+                                </a> 
+                            </h6>
+                        </div>
                         <div  v-show="player_in_room.status == -1"><br />
                             <a class="waves-effect waves-light btn-large green white-text" @click="switchPage('main-page')">
                                 <span v-show="langCheck('ind')">Keluar Ruangan</span>

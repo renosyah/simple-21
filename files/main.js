@@ -84,6 +84,10 @@ new Vue({
                 card_groups : []
             },
             moneys : [],
+            room_score : {
+                room_name : "",
+                scores : [],
+            },
             lobby_ws : null,
             room_ws : null,
             is_online : true,
@@ -168,7 +172,9 @@ new Vue({
                         this.initLobbyWs()
                     } else if (param.get('page') == 'room-page'){
                         this.initRoomWs(param.get('id-room'))
-                    }                        
+                    } else if (param.get('page') == 'score-page'){
+                        this.roomScores(param.get('id-room'))
+                    }                       
                 })
                 .catch(e => {
                     console.log(e)
@@ -451,6 +457,23 @@ new Vue({
                     console.log(e)
                 })
         },
+        roomScores(roomID){
+            this.is_loading = true
+            axios.get(this.baseUrl() + "room/scores" + "?id-room=" + roomID)
+                .then(response => {
+                    this.is_loading = false
+                    if (response.data.status != 200) {
+                        this.switchPage('main-page')
+                        return
+                    }
+
+                    this.room_score = response.data.result
+                })
+                .catch(e => {
+                    console.log(e)
+                    this.is_loading = false
+                })
+        },
         cardsGroup(){
             axios.get(this.baseUrl() + "card-group")
                 .then(response => {
@@ -509,6 +532,13 @@ new Vue({
                 var searchParams = new URLSearchParams(window.location.search);
                 searchParams.set('page', name);
                 window.location.search = searchParams.toString();
+            }
+        },
+        newPage(name){
+            if ('URLSearchParams' in window) {
+                var searchParams = new URLSearchParams(window.location.search);
+                searchParams.set('page', name);
+                window.open("?" + searchParams.toString(), '_blank')
             }
         },
         switchLang(lang){

@@ -206,7 +206,6 @@ func (h *RouterHub) EndRound(id string) {
 				// lose bet
 			} else {
 
-				p.Bet = 0
 				p.Status = model.PLAYER_STATUS_LOSE
 
 			}

@@ -44,6 +44,7 @@ var rootCmd = &cobra.Command{
 		r.HandleFunc("/room/player", routerHub.HandleDetailRoomPlayer)
 		r.HandleFunc("/room/setbet", routerHub.HandlePlaceBet)
 		r.HandleFunc("/room/action", routerHub.HandlePlayerActionTurnRoom)
+		r.HandleFunc("/room/scores", routerHub.HandleListRoomScore)
 		r.HandleFunc("/rooms", routerHub.HandleListRoom)
 		r.HandleFunc("/delroom", routerHub.HandleRemoveRoom)
 

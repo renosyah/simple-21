@@ -171,8 +171,6 @@ func (h *RouterHub) EndRound(id string) {
 	r.ConnectionMx.Lock()
 	defer r.ConnectionMx.Unlock()
 
-	r.Round++
-
 	for _, p := range r.RoomPlayers {
 
 		// dealer bust
@@ -217,6 +215,10 @@ func (h *RouterHub) EndRound(id string) {
 			}
 		}
 	}
+
+	scoreRound := r.Round
+	r.Scores[scoreRound] = model.RecordScore(scoreRound, r.Dealer, r.RoomPlayers)
+	r.Round++
 }
 
 func (r *RoomsHub) isMineHighThanOther(p *model.RoomPlayer) bool {
@@ -231,7 +233,7 @@ func (r *RoomsHub) isMineHighThanOther(p *model.RoomPlayer) bool {
 	}
 
 	for _, rp := range r.RoomPlayers {
-		if rp.ID != p.ID && rp.Total < p.Total {
+		if rp.ID != p.ID && p.Total < rp.Total {
 			isHigher = false
 			break
 		}

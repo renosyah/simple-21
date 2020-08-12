@@ -247,7 +247,7 @@ func (h *RouterHub) HandlePlayerActionTurnRoom(w http.ResponseWriter, r *http.Re
 		room.givePlayerOneCard(param.PlayerID, true)
 		evt := room.blackjackForEvt(param.PlayerID, model.ROOM_EVENT_ON_CARD_GIVEN)
 
-		if evt == model.ROOM_EVENT_ON_PLAYER_BUST {
+		if evt == model.ROOM_EVENT_ON_PLAYER_BUST || evt == model.ROOM_EVENT_ON_PLAYER_BLACKJACK_WIN {
 			room.removeFromTurnOrder(param.PlayerID)
 		}
 

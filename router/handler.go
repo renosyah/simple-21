@@ -32,6 +32,7 @@ type (
 		Dealer         *model.RoomPlayer
 		RoomPlayers    map[string]*model.RoomPlayer
 		Cards          map[string]*model.Card
+		Scores         map[int]*model.Score
 		SessionExpired time.Time
 
 		// event in room

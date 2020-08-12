@@ -619,7 +619,7 @@
                               </tr>
                           <tr v-for="pr in room.players" v-bind:key="pr.id">
                             <td>{{ pr.name }}</td>
-                            <td :class="{'red-text' : pr.status == 8,'green-text' : pr.status == 7}">{{ pr.total > 21 ? pr.total + ' (Bust)' : pr.total }}</td> 
+                            <td :class="{'red-text' : pr.status == 8 || pr.total > 21,'green-text' : pr.status == 7}">{{ pr.total > 21 ? pr.total + ' (Bust)' : pr.total }}</td> 
                           </tr>
                         </tbody>
                       </table>
@@ -667,7 +667,7 @@
                               </tr>
                           <tr v-for="pr in room.players" v-bind:key="pr.id">
                             <td>{{ pr.name }}</td>
-                            <td :class="{'red-text' : pr.status == 8,'green-text' : pr.status == 7}">{{ pr.total > 21 ? pr.total + ' (Bust)' : pr.total }}</td> 
+                            <td :class="{'red-text' : pr.status == 8 || pr.total > 21,'green-text' : pr.status == 7}">{{ pr.total > 21 ? pr.total + ' (Bust)' : pr.total }}</td> 
                           </tr>
                         </tbody>
                       </table>

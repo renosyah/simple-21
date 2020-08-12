@@ -117,7 +117,7 @@ new Vue({
             window.$("#modal-room-action").modal(val.status == PLAYER_STATUS_AT_TURN ? 'open' : 'close');
             window.$("#modal-room-bet").modal(val.status == PLAYER_STATUS_INVITED || val.status == PLAYER_STATUS_IDLE ? 'open' : 'close');    
             window.$("#modal-room-win").modal(val.status == PLAYER_STATUS_REWARDED ? 'open' : 'close');
-            window.$("#modal-room-lose").modal(val.status == PLAYER_STATUS_LOSE ? 'open' : 'close');
+            window.$("#modal-room-lose").modal(val.status == PLAYER_STATUS_LOSE  || val.status == PLAYER_STATUS_BUST ? 'open' : 'close');
         }
     },
     computed : {

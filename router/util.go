@@ -51,6 +51,56 @@ func (h *RouterHub) dropEmptyRoom() {
 	}
 }
 
+func (room *RoomsHub) startGame() {
+
+	// first given
+	room.givePlayerOneCard(room.Dealer.ID, true)
+	room.EventBroadcast <- model.RoomEventData{
+		Name: model.ROOM_EVENT_ON_CARD_GIVEN,
+	}
+	time.Sleep(2 * time.Second)
+
+	for _, id := range room.TurnsOrder {
+		room.givePlayerOneCard(id, true)
+		room.EventBroadcast <- model.RoomEventData{
+			Name: model.ROOM_EVENT_ON_CARD_GIVEN,
+		}
+		time.Sleep(2 * time.Second)
+	}
+	time.Sleep(3 * time.Second)
+
+	// second given and check for blackjack
+	room.givePlayerOneCard(room.Dealer.ID, false)
+	evtDlr := room.blackjackForEvt(room.Dealer.ID, model.ROOM_EVENT_ON_CARD_GIVEN)
+	room.EventBroadcast <- model.RoomEventData{
+		Name: evtDlr,
+	}
+	time.Sleep(2 * time.Second)
+
+	for _, id := range room.TurnsOrder {
+		room.givePlayerOneCard(id, true)
+		evt := room.blackjackForEvt(id, model.ROOM_EVENT_ON_CARD_GIVEN)
+		room.EventBroadcast <- model.RoomEventData{
+			Name: evt,
+		}
+		time.Sleep(2 * time.Second)
+	}
+
+	room.ConnectionMx.Lock()
+	defer room.ConnectionMx.Unlock()
+
+	// set to play
+	// set first player turn
+	room.Status = model.ROOM_STATUS_ON_PLAY
+	if pTurn, ok := room.RoomPlayers[room.TurnsOrder[room.TurnPost]]; ok {
+		pTurn.Status = model.PLAYER_STATUS_AT_TURN
+	}
+
+	room.EventBroadcast <- model.RoomEventData{
+		Name: model.ROOM_EVENT_ON_GAME_START,
+	}
+}
+
 func (r *RoomsHub) givePlayerOneCard(id string, show bool) {
 	r.ConnectionMx.Lock()
 	defer r.ConnectionMx.Unlock()
@@ -80,6 +130,32 @@ func (r *RoomsHub) givePlayerOneCard(id string, show bool) {
 
 	p.Cards = append(p.Cards, card)
 	p.SumUpTotal()
+}
+
+func (r *RoomsHub) blackjackForEvt(id string, dfEvt string) string {
+	r.ConnectionMx.Lock()
+	defer r.ConnectionMx.Unlock()
+
+	evt := dfEvt
+
+	if player, ok := r.RoomPlayers[id]; ok {
+		if player.Total == 21 {
+			player.Status = model.PLAYER_STATUS_REWARDED
+			evt = model.ROOM_EVENT_ON_PLAYER_BLACKJACK_WIN
+		} else if player.Total > 21 {
+			player.Status = model.PLAYER_STATUS_BUST
+			evt = model.ROOM_EVENT_ON_PLAYER_BUST
+		}
+
+	} else if r.Dealer.ID == id {
+		if r.Dealer.Total == 21 {
+			evt = model.ROOM_EVENT_ON_PLAYER_BLACKJACK_WIN
+		} else if r.Dealer.Total > 21 {
+			evt = model.ROOM_EVENT_ON_PLAYER_BUST
+		}
+	}
+
+	return evt
 }
 
 func (h *RouterHub) EndRound(id string) {
@@ -166,11 +242,23 @@ func (r *RoomsHub) isMineHighThanOther(p *model.RoomPlayer) bool {
 
 func (r *RoomsHub) isPlayersStatusSame(status int) bool {
 	for _, i := range r.RoomPlayers {
-		if i.Status != status && i.Status != model.PLAYER_STATUS_BUST && i.Status != model.PLAYER_STATUS_OUT {
+		if i.Status != status && i.Status != model.PLAYER_STATUS_BUST && i.Status != model.PLAYER_STATUS_REWARDED {
 			return false
 		}
 	}
 	return true
+}
+
+func (r *RoomsHub) removeFromTurnOrder(id string) {
+	r.ConnectionMx.Lock()
+	defer r.ConnectionMx.Unlock()
+
+	r.TurnsOrder = []string{}
+	for _, p := range r.Room.Players {
+		if p.ID != id {
+			r.TurnsOrder = append(r.TurnsOrder, p.ID)
+		}
+	}
 }
 
 func (r *RoomsHub) resetRoom() {
@@ -184,6 +272,10 @@ func (r *RoomsHub) resetRoom() {
 	}
 
 	r.TurnPost = 0
+	r.TurnsOrder = []string{}
+	for _, p := range r.Room.Players {
+		r.TurnsOrder = append(r.TurnsOrder, p.ID)
+	}
 
 	r.Dealer.Status = model.PLAYER_STATUS_IDLE
 	r.Dealer.Bet = 0

@@ -197,53 +197,7 @@ func (h *RouterHub) HandlePlaceBet(w http.ResponseWriter, r *http.Request) {
 
 	if room.isPlayersStatusSame(model.PLAYER_STATUS_SET_BET) {
 
-		go func() {
-
-			// first given
-			room.givePlayerOneCard(room.Dealer.ID, true)
-			room.EventBroadcast <- model.RoomEventData{
-				Name: model.ROOM_EVENT_ON_CARD_GIVEN,
-			}
-			time.Sleep(2 * time.Second)
-
-			for _, id := range room.TurnsOrder {
-				room.givePlayerOneCard(id, true)
-				room.EventBroadcast <- model.RoomEventData{
-					Name: model.ROOM_EVENT_ON_CARD_GIVEN,
-				}
-				time.Sleep(2 * time.Second)
-			}
-			time.Sleep(3 * time.Second)
-
-			// second given
-			room.givePlayerOneCard(room.Dealer.ID, false)
-			room.EventBroadcast <- model.RoomEventData{
-				Name: model.ROOM_EVENT_ON_CARD_GIVEN,
-			}
-			time.Sleep(2 * time.Second)
-
-			for _, id := range room.TurnsOrder {
-				room.givePlayerOneCard(id, true)
-				room.EventBroadcast <- model.RoomEventData{
-					Name: model.ROOM_EVENT_ON_CARD_GIVEN,
-				}
-				time.Sleep(2 * time.Second)
-			}
-
-			// set to play
-			// set first player turn
-			room.ConnectionMx.Lock()
-			room.Status = model.ROOM_STATUS_ON_PLAY
-			if pTurn, ok := room.RoomPlayers[room.TurnsOrder[room.TurnPost]]; ok {
-				pTurn.Status = model.PLAYER_STATUS_AT_TURN
-			}
-			room.ConnectionMx.Unlock()
-
-			room.EventBroadcast <- model.RoomEventData{
-				Name: model.ROOM_EVENT_ON_GAME_START,
-			}
-
-		}()
+		go room.startGame()
 
 		room.EventBroadcast <- model.RoomEventData{
 			Name: model.ROOM_EVENT_ON_GAME_START,
@@ -286,49 +240,40 @@ func (h *RouterHub) HandlePlayerActionTurnRoom(w http.ResponseWriter, r *http.Re
 		return
 	}
 
-	if param.Choosed == model.ROOM_TURN_CHOOSE_HIT {
+	switch param.Choosed {
+	case model.ROOM_TURN_CHOOSE_HIT:
 
+		player.Status = model.PLAYER_STATUS_SET_BET
 		room.givePlayerOneCard(param.PlayerID, true)
+		evt := room.blackjackForEvt(param.PlayerID, model.ROOM_EVENT_ON_CARD_GIVEN)
+
+		if evt == model.ROOM_EVENT_ON_PLAYER_BUST {
+			room.removeFromTurnOrder(param.PlayerID)
+		}
 
 		room.EventBroadcast <- model.RoomEventData{
-			Name: model.ROOM_EVENT_ON_CARD_GIVEN,
+			Name: evt,
+			Data: model.Player{Name: player.Name},
 		}
 
-	}
+		break
+	case model.ROOM_TURN_CHOOSE_PASS:
 
-	room.ConnectionMx.Lock()
-	defer room.ConnectionMx.Unlock()
+		player.Status = model.PLAYER_STATUS_FINISH_TURN
+		room.removeFromTurnOrder(param.PlayerID)
 
-	player.Status = model.PLAYER_STATUS_FINISH_TURN
-	player.SumUpTotal()
-
-	room.TurnPost++
-	if room.TurnPost <= len(room.TurnsOrder)-1 {
-		if pTurn, ok := room.RoomPlayers[room.TurnsOrder[room.TurnPost]]; ok {
-			pTurn.Status = model.PLAYER_STATUS_AT_TURN
-		}
-	}
-
-	evtNm := model.ROOM_EVENT_ON_PLAYER_END_TURN
-
-	if player.Total == 21 {
-
-		evtNm = model.ROOM_EVENT_ON_PLAYER_BLACKJACK_WIN
-
-	} else if player.Total > 21 {
-
-		player.Status = model.PLAYER_STATUS_BUST
-		evtNm = model.ROOM_EVENT_ON_PLAYER_BUST
-
-	}
-
-	room.EventBroadcast <- model.RoomEventData{
-		Name: evtNm,
-		Data: model.Player{Name: player.Name},
+		break
+	default:
+		break
 	}
 
 	// end round sum up
 	if room.isPlayersStatusSame(model.PLAYER_STATUS_FINISH_TURN) {
+
+		room.EventBroadcast <- model.RoomEventData{
+			Name: model.ROOM_EVENT_ON_PLAYER_END_TURN,
+			Data: model.Player{Name: player.Name},
+		}
 
 		go func() {
 
@@ -339,21 +284,23 @@ func (h *RouterHub) HandlePlayerActionTurnRoom(w http.ResponseWriter, r *http.Re
 				room.Dealer.ShowAllCard()
 				room.Dealer.SumUpTotal()
 
-				if room.Dealer.Total >= 17 {
-					room.EventBroadcast <- model.RoomEventData{
-						Name: model.ROOM_EVENT_ON_CARD_GIVEN,
-					}
-
-					break
-				}
-
 				if room.Dealer.Total < 17 {
 
 					room.givePlayerOneCard(room.Dealer.ID, true)
+					evt := room.blackjackForEvt(room.Dealer.ID, model.ROOM_EVENT_ON_CARD_GIVEN)
+					room.EventBroadcast <- model.RoomEventData{
+						Name: evt,
+					}
+				}
+
+				if room.Dealer.Total >= 17 {
+
 					room.EventBroadcast <- model.RoomEventData{
 						Name: model.ROOM_EVENT_ON_CARD_GIVEN,
 					}
+					break
 				}
+
 			}
 
 			time.Sleep(2 * time.Second)
@@ -372,6 +319,19 @@ func (h *RouterHub) HandlePlayerActionTurnRoom(w http.ResponseWriter, r *http.Re
 
 		api.HttpResponse(w, r, true, http.StatusOK)
 		return
+	}
+
+	room.TurnPost++
+	if room.TurnPost > len(room.TurnsOrder)-1 {
+		room.TurnPost = 0
+	}
+	if pTurn, ok := room.RoomPlayers[room.TurnsOrder[room.TurnPost]]; ok {
+		pTurn.Status = model.PLAYER_STATUS_AT_TURN
+	}
+
+	room.EventBroadcast <- model.RoomEventData{
+		Name: model.ROOM_EVENT_ON_PLAYER_END_TURN,
+		Data: model.Player{Name: player.Name},
 	}
 
 	api.HttpResponse(w, r, true, http.StatusOK)

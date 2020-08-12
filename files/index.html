@@ -448,28 +448,33 @@
                                         </span>
                                         <p>Total : {{ room.dealer.total_show }} <br /><br /> </p>  
                                         <div class="row">  
-                                            <div v-for="(c,ic) in room.dealer.cards" v-bind:key="ic" class="col s1 m1 l1 card-panel z-depth-2 remi-card" :style="{'border-style': 'dotted','border-color': !c.show ? 'black' : 'white'}" style="width: 90px;margin-left:-50px;float:left;">
-                                                <div class="card-bg" :style="{'background-image': 'url('+ c.image +')'}">
-                                                    <span class="black-text" v-show="c.show">
-                                                        <span class="left">{{ c.label }}</span> 
-                                                        <br /><br />
-                                                        <div class="row">
-                                                            <span class="col s4 offset-s4"> <br /> </span>
-                                                        </div>
-                                                        <br /> 
-                                                        <span class="right">{{ c.label }}</span>
-                                                    </span>
+                                            <div v-for="(c,ic) in room.dealer.cards" v-bind:key="ic">
+                                                <div v-if="c.show">
+                                                    <div class="col s1 m1 l1 card-panel z-depth-2 remi-card card-bg" style="width: 90px;margin-left:-50px;float:left;" :style="{'background-image': 'url('+ c.image +')'}">
+                                                        <span class="black-text">
+                                                            <span class="left">{{ c.label }}</span> 
+                                                            <br /><br />
+                                                            <div class="row">
+                                                                <span class="col s4 offset-s4"> <br /> </span>
+                                                            </div>
+                                                            <br /> 
+                                                            <span class="right">{{ c.label }}</span>
+                                                        </span>
+                                                    </div>
                                                 </div>
-                                                <span class="black-text" v-show="!c.show">
-                                                    <span class="left">  <br /> </span> 
-                                                    <br /><br />
-                                                    <p class="center" style="font-size: 34px;">
-                                                        ?
-                                                    </p>
-                                                    <br /> 
-                                                    <br /> 
-                                                    <span class="right"> <br /> </span>
-                                                </span>
+                                                <div v-else>
+                                                    <div class="col s1 m1 l1 card-panel z-depth-2 remi-card grey lighten-3 card-bg" style="width: 90px;margin-left:-50px;float:left;background-image: url('./img/unknown.png');">
+                                                        <span class="black-text">
+                                                            <span class="left"><br /></span> 
+                                                            <br /><br />
+                                                            <div class="row">
+                                                                <span class="col s4 offset-s4"> <br /> </span>
+                                                            </div>
+                                                            <br /> 
+                                                            <span class="right"><br /></span>
+                                                        </span>
+                                                    </div> 
+                                                </div>
                                             </div>
                                         </div>
                                     </li>
@@ -499,27 +504,33 @@
                                             <span v-show="langCheck('en')">- No Cards -</span>
                                         </p>     
                                         <div class="row">  
-                                            <div v-for="(c,ic) in r.cards" v-bind:key="ic" class="col s1 m1 l1 card-panel z-depth-3 remi-card" :class="{'white': c.show,'grey lighten-1': !c.show}" style="width: 90px;margin-left:-50px;float:left;">
-                                                <div class="card-bg" :style="{'background-image': 'url('+ c.image +')'}">
-                                                    <span class="black-text" v-show="c.show">
-                                                        <span class="left">{{ c.label }}</span> 
-                                                        <br /><br />
-                                                        <div class="row">
-                                                            <span class="col s4 offset-s4"><br /> </span>
-                                                        </div>
-                                                        <br /> 
-                                                        <span class="right">{{ c.label }}</span>
-                                                    </span>
-                                                </div>
-                                                <span class="white-text" v-show="!c.show">
-                                                    <span class="left">  ? </span> 
-                                                    <br /><br />
-                                                    <div class="row">
-                                                        <span class="col s4 offset-s4"> ? </span>
+                                            <div v-for="(c,ic) in r.cards" v-bind:key="ic">
+                                                <div v-if="c.show">
+                                                    <div class="col s1 m1 l1 card-panel z-depth-2 remi-card card-bg" style="width: 90px;margin-left:-50px;float:left;" :style="{'background-image': 'url('+ c.image +')'}">
+                                                        <span class="black-text">
+                                                            <span class="left">{{ c.label }}</span> 
+                                                            <br /><br />
+                                                            <div class="row">
+                                                                <span class="col s4 offset-s4"> <br /> </span>
+                                                            </div>
+                                                            <br /> 
+                                                            <span class="right">{{ c.label }}</span>
+                                                        </span>
                                                     </div>
-                                                    <br /> 
-                                                    <span class="right"> ? </span>
-                                                </span>
+                                                </div>
+                                                <div v-else>
+                                                    <div class="col s1 m1 l1 card-panel z-depth-2 remi-card grey lighten-3 card-bg" style="width: 90px;margin-left:-50px;float:left;background-image: url('./img/unknown.png');">
+                                                        <span class="black-text">
+                                                            <span class="left"><br /></span> 
+                                                            <br /><br />
+                                                            <div class="row">
+                                                                <span class="col s4 offset-s4"> <br /> </span>
+                                                            </div>
+                                                            <br /> 
+                                                            <span class="right"><br /></span>
+                                                        </span>
+                                                    </div> 
+                                                </div>
                                             </div>
                                         </div> 
                                     </li>

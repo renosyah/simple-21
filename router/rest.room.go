@@ -293,6 +293,7 @@ func (h *RouterHub) HandlePlayerActionTurnRoom(w http.ResponseWriter, r *http.Re
 
 				room.EventBroadcast <- model.RoomEventData{
 					Name: evt,
+					Data: model.Player{Name: room.Dealer.Name},
 				}
 
 				if room.Dealer.Total >= 17 {

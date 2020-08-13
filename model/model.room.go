@@ -8,15 +8,16 @@ const (
 
 type (
 	Room struct {
-		ID         string       `json:"id"`
-		OwnerID    string       `json:"-"`
-		Name       string       `json:"name"`
-		Dealer     RoomPlayer   `json:"dealer"`
-		Players    []RoomPlayer `json:"players"`
-		Removable  bool         `json:"removable"`
-		Status     int          `json:"status"`
-		Round      int          `json:"round"`
-		CardGroups []string     `json:"card_groups"`
+		ID          string       `json:"id"`
+		OwnerID     string       `json:"-"`
+		Name        string       `json:"name"`
+		Dealer      RoomPlayer   `json:"dealer"`
+		Players     []RoomPlayer `json:"players"`
+		Removable   bool         `json:"removable"`
+		Status      int          `json:"status"`
+		Round       int          `json:"round"`
+		CardGroups  []string     `json:"-"`
+		CanDrawCard bool         `json:"can_draw_card"`
 	}
 	AddRoom struct {
 		HostID     string   `json:"host_id"`

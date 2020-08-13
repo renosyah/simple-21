@@ -28,11 +28,12 @@ func (h *RouterHub) openRoom(pHostID, name string, player []model.Player, cgroup
 	}
 
 	room := model.Room{
-		ID:         fmt.Sprint(uuid.NewV4()),
-		OwnerID:    pHostID,
-		Name:       name,
-		Players:    roomPLayers,
-		CardGroups: cgroups,
+		ID:          fmt.Sprint(uuid.NewV4()),
+		OwnerID:     pHostID,
+		Name:        name,
+		Players:     roomPLayers,
+		CardGroups:  cgroups,
+		CanDrawCard: true,
 	}
 	hub := h.createRoomHub(room)
 

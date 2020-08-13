@@ -225,23 +225,23 @@
                                 </li>
                             </ul>
                             <h5 class="green-text" v-show="player.money < 50">
-                                <span v-show="langCheck('ind')">Isi Ulang</span>
-                                <span v-show="langCheck('en')">Top Up</span>
+                                <span v-show="langCheck('ind')">Uang</span>
+                                <span v-show="langCheck('en')">Money</span>
                             </h5>
                             <div class="row" v-show="player.money < 50">
                                 <div v-for="money in moneys" v-bind:key="money.id"  class="col s6 m6 l6">
                                     <div class="center card-panel z-depth-2"  style="min-height: 150px;cursor: pointer;" @click="buyMoney(money.id)">
-                                        <span class="center green-text">
+                                        <span class="center black-text">
                                             {{ money.name }}
                                         </span>
                                         <br />
-                                        <span class="center black-text">
-                                            $ {{ money.amount }}
+                                        <span class="center green-text">
+                                           + $ {{ money.amount }}
                                         </span>
                                     </div>
                                 </div>
                             </div>
-                            <br />
+                             
                             <h5 class="green-text">
                                 <span v-show="langCheck('ind')">Bermain</span>
                                 <span v-show="langCheck('en')">Game</span>
@@ -329,7 +329,7 @@
             </div>
         </div>
 
-         <!---------ROOM PAGE---------->
+         <!---------SCORE PAGE---------->
          <div v-show="getPageName == 'score-page'">
             <nav>
                 <div class="nav-wrapper">
@@ -423,6 +423,14 @@
                                 <a style="cursor: pointer;" data-target="room-nav" class="sidenav-trigger"><i class="material-icons green-text">menu</i></a>
                             </li>
                         </ul>
+                        <ul class="right">
+                            <li>
+                                <a style="cursor: pointer;" class="green-text" @click="newPage('score-page')">
+                                    <span v-show="langCheck('ind')">Skor</span>
+                                    <span v-show="langCheck('en')">Score</span>
+                                </a> 
+                            </li>
+                        </ul>
                     </div>
                 </nav>
             </div>
@@ -438,13 +446,7 @@
                                 <span v-show="langCheck('en')">Round&nbsp;</span>
                                 {{ room.round }}  
                             </h6>
-                            <h6>
-                                <a href="#" class="green-text" @click="newPage('score-page')">
-                                    <span v-show="langCheck('ind')">Skor</span>
-                                    <span v-show="langCheck('en')">Score</span>
-                                </a> 
-                            </h6>
-                            <div v-show="player_in_room.status == -1"><br />
+                            <div v-show="player_in_room.status == -1">
                                 <a class="waves-effect waves-light btn-large green white-text" @click="switchPage('main-page')">
                                     <span v-show="langCheck('ind')">Keluar Ruangan</span>
                                     <span v-show="langCheck('en')">Exit Room</span>
@@ -645,7 +647,7 @@
                     <div class="row">
                         <div class="col s1 m2 l3"></div>
                         <div class="center col s10 m8 l6">
-                            <h5 class="red-text" v-show="player.money > 50">
+                            <h5 class="red-text" v-show="player.money >= 50">
                                 $ {{ bet_holder }}                  
                             </h5>
                             <p v-show="player.money < 50"> 
@@ -653,7 +655,7 @@
                                 <span v-show="langCheck('en')">You Dont Have enough money!</span>
                              </p>
                             <p class="range-field" v-show="player.money > 50">
-                                <input class="range-green" type="range" min="50" :max="player.money" v-model="bet_holder" />
+                                <input class="range-green" type="range" min="50" :max="player.money" step="50" v-model="bet_holder" />
                             </p>
                         </div>
                         <div class="col s1 m2 l3"></div>
@@ -679,7 +681,7 @@
                         <span v-show="langCheck('ind')">Giliran Anda</span>
                         <span v-show="langCheck('en')">Your Turn</span>                    
                     </h5>
-                    <a class="waves-effect waves-light btn-large green white-text" style="text-transform: none;margin-top: 10px;" @click="setAction(0)">
+                    <a class="waves-effect waves-light btn-large green white-text" style="text-transform: none;margin-top: 10px;" @click="setAction(0)" :disabled="!room.can_draw_card">
                         <span v-show="langCheck('ind')">Minta Kartu!</span>
                         <span v-show="langCheck('en')">Hit Me!</span>
                     </a>
@@ -735,8 +737,14 @@
                     <span v-show="langCheck('en')"> Waiting... </span>
                 </p>
                 <div class="modal-footer green-text">
-
-                 <a style="cursor: pointer;" class="modal-close waves-effect waves-green btn-flat">Close</a> 
+                    <a style="cursor: pointer;" @click="newPage('score-page')" class="waves-effect waves-green btn-flat">
+                        <span v-show="langCheck('ind')">Skor</span>
+                        <span v-show="langCheck('en')">Score</span>
+                    </a>
+                    <a style="cursor: pointer;" class="modal-close waves-effect waves-green btn-flat">
+                        <span v-show="langCheck('ind')">Tutup</span>
+                        <span v-show="langCheck('en')">Close</span>
+                    </a>  
                 </div>
             </div>
 
@@ -783,7 +791,14 @@
                     <span v-show="langCheck('en')"> Waiting... </span>
                 </p>
                 <div class="modal-footer">
-                 <a style="cursor: pointer;" class="modal-close waves-effect waves-green btn-flat">Close</a> 
+                    <a style="cursor: pointer;" @click="newPage('score-page')" class="waves-effect waves-green btn-flat">
+                        <span v-show="langCheck('ind')">Skor</span>
+                        <span v-show="langCheck('en')">Score</span>
+                    </a>
+                    <a style="cursor: pointer;" class="modal-close waves-effect waves-green btn-flat">
+                        <span v-show="langCheck('ind')">Tutup</span>
+                        <span v-show="langCheck('en')">Close</span>
+                    </a>  
                 </div>
             </div>
 
@@ -791,8 +806,8 @@
             <div id="modal-room-score" class="modal">
                 <div class="modal-content">
                 <h4 class="green-text">
-                    <span v-show="langCheck('ind')">Papan Skor</span>
-                    <span v-show="langCheck('en')">Score Board</span>
+                    <span v-show="langCheck('ind')">Papan Hasil</span>
+                    <span v-show="langCheck('en')">Result Board</span>
                 </h4>
                 <div class="center">
                     <table>
@@ -821,12 +836,15 @@
                       </table>
                     </div>
                 </div>
-                <p class="center">
-                    <span v-show="langCheck('ind')"> Meyiapkan Ronde Selanjutnya.... </span>
-                    <span v-show="langCheck('en')"> Prepare for next round... </span>
-                </p>
                 <div class="modal-footer">
-                <!---<a style="cursor: pointer;" class="modal-close waves-effect waves-green btn-flat">Close</a>--->
+                 <a style="cursor: pointer;" @click="newPage('score-page')" class="waves-effect waves-green btn-flat">
+                    <span v-show="langCheck('ind')">Skor</span>
+                    <span v-show="langCheck('en')">Score</span>
+                </a>
+                <a style="cursor: pointer;" class="modal-close waves-effect waves-green btn-flat">
+                    <span v-show="langCheck('ind')">Tutup</span>
+                    <span v-show="langCheck('en')">Close</span>
+                </a>  
                 </div>
             </div>
 

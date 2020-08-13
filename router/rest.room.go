@@ -101,11 +101,12 @@ func (h *RouterHub) HandleDetailRoom(w http.ResponseWriter, r *http.Request) {
 	})
 
 	rm := model.Room{
-		ID:      room.Room.ID,
-		Name:    room.Room.Name,
-		Dealer:  *room.Dealer,
-		Players: players,
-		Round:   room.Round,
+		ID:          room.Room.ID,
+		Name:        room.Room.Name,
+		Dealer:      *room.Dealer,
+		Players:     players,
+		Round:       room.Round,
+		CanDrawCard: len(room.Cards) > 0,
 	}
 
 	api.HttpResponse(w, r, rm, http.StatusOK)
@@ -296,7 +297,7 @@ func (h *RouterHub) HandlePlayerActionTurnRoom(w http.ResponseWriter, r *http.Re
 					Data: model.Player{Name: room.Dealer.Name},
 				}
 
-				if room.Dealer.Total >= 17 {
+				if room.Dealer.Total >= 17 || len(room.Cards) == 0 {
 					break
 				}
 

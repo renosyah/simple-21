@@ -43,6 +43,10 @@ func (h *RouterHub) dropEmptyRoom() {
 	for {
 		for id, room := range h.Rooms {
 			if len(room.RoomSubscriber) == 0 && time.Now().Local().After(room.SessionExpired) {
+				h.Lobbies.EventBroadcast <- model.EventData{
+					Name: model.LOBBY_EVENT_ON_ROOM_REMOVE,
+					Data: room.Room,
+				}
 				h.Rooms[id].EventBroadcast <- model.RoomEventData{Status: model.ROOM_STATUS_NOT_USE}
 				break
 			}
@@ -106,6 +110,7 @@ func (r *RoomsHub) givePlayerOneCard(id string, show bool) {
 	defer r.ConnectionMx.Unlock()
 
 	if len(r.Cards) <= 0 {
+		r.Room.CanDrawCard = false
 		return
 	}
 

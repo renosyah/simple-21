@@ -66,6 +66,7 @@ new Vue({
                 },
                 players : [],
                 status : 0,
+                can_draw_card : false
             },
             player_in_room : {
                 id:"",
@@ -111,7 +112,7 @@ new Vue({
     },
     mounted () {
         window.$('.dropdown-trigger').dropdown()
-        window.$('.modal').modal({opacity:0.1,dismissible: false,preventScrolling:false})
+        window.$('.modal').modal({opacity:0.05,dismissible: false,preventScrolling:false})
         window.$('.sidenav').sidenav();
         this.initPlayer()  
         this.randomName("yes")      
@@ -280,7 +281,7 @@ new Vue({
                         window.M.toast({outDuration : TOAST_OUT_DURRATION,html: '<b>Room Not Found!</b>', classes: 'white green-text'})
                         return
                     }
-                    this.bet_holder = this.player.money > 50 ? 50 : 0 
+                    this.bet_holder = this.player.money >= 50 ? 50 : 0 
                 })
                 .catch(e => {
                     console.log(e)
@@ -402,7 +403,7 @@ new Vue({
                         if (this.player_in_room.status == PLAYER_STATUS_SPECTATE){
                             window.$("#modal-room-score").modal('close');
                         }  
-                        window.M.toast({outDuration : TOAST_OUT_DURRATION,html: '<b>game is started!</b>', classes: 'white green-text'})
+                        //window.M.toast({outDuration : TOAST_OUT_DURRATION,html: '<b>game is started!</b>', classes: 'white green-text'})
                         this.getRoom(idRoom)
                         break;
                     case ROOM_EVENT_ON_CARD_GIVEN:

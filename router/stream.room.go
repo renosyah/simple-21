@@ -59,6 +59,20 @@ func (h *RouterHub) HandleStreamRoom(w http.ResponseWriter, r *http.Request) {
 		switch event.Name {
 		case model.ROOM_EVENT_ON_JOIN:
 			/* this event is for client */
+		case model.ROOM_EVENT_ON_PLAYER_SET_BET:
+			/* this event is for client */
+		case model.ROOM_EVENT_ON_GAME_START:
+			/* this event is for client */
+		case model.ROOM_EVENT_ON_CARD_GIVEN:
+			/* this event is for client */
+		case model.ROOM_EVENT_ON_PLAYER_END_TURN:
+			/* this event is for client */
+		case model.ROOM_EVENT_ON_PLAYER_BLACKJACK_WIN:
+			/* this event is for client */
+		case model.ROOM_EVENT_ON_PLAYER_BUST:
+			/* this event is for client */
+		case model.ROOM_EVENT_ON_GAME_END:
+			/* this event is for client */
 		case model.ROOM_EVENT_ON_DISCONNECTED:
 			/* this event is for client */
 		default:

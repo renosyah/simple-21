@@ -14,6 +14,13 @@ import (
 	"github.com/renosyah/simple-21/util"
 )
 
+type (
+	TurnHandler struct {
+		TurnPost   int
+		TurnsOrder []string
+	}
+)
+
 func HandleGetRandomName(w http.ResponseWriter, r *http.Request) {
 	wttl := r.FormValue("title")
 	api.HttpResponse(w, r, util.GenerateRandomName(wttl != ""), http.StatusOK)
@@ -64,7 +71,7 @@ func (room *RoomsHub) startGame() {
 	}
 	time.Sleep(2 * time.Second)
 
-	for _, id := range room.TurnsOrder {
+	for _, id := range room.Turn.TurnsOrder {
 		room.givePlayerOneCard(id, true)
 		room.EventBroadcast <- model.RoomEventData{
 			Name: model.ROOM_EVENT_ON_CARD_GIVEN,
@@ -81,7 +88,7 @@ func (room *RoomsHub) startGame() {
 	}
 	time.Sleep(2 * time.Second)
 
-	for _, id := range room.TurnsOrder {
+	for _, id := range room.Turn.TurnsOrder {
 		room.givePlayerOneCard(id, true)
 		evt := room.blackjackForEvt(id, model.ROOM_EVENT_ON_CARD_GIVEN)
 		room.EventBroadcast <- model.RoomEventData{
@@ -96,7 +103,7 @@ func (room *RoomsHub) startGame() {
 	// set to play
 	// set first player turn
 	room.Status = model.ROOM_STATUS_ON_PLAY
-	if pTurn, ok := room.RoomPlayers[room.TurnsOrder[room.TurnPost]]; ok {
+	if pTurn, ok := room.RoomPlayers[room.Turn.TurnsOrder[room.Turn.TurnPost]]; ok {
 		pTurn.Status = model.PLAYER_STATUS_AT_TURN
 	}
 
@@ -163,6 +170,50 @@ func (r *RoomsHub) blackjackForEvt(id string, dfEvt string) string {
 	return evt
 }
 
+func (h *RouterHub) allPlayerTurnFinish(room *RoomsHub) {
+
+	go func() {
+
+		for {
+
+			time.Sleep(2 * time.Second)
+
+			room.Dealer.ShowAllCard()
+			room.Dealer.SumUpTotal()
+
+			evt := model.ROOM_EVENT_ON_CARD_GIVEN
+
+			if room.Dealer.Total < 17 {
+				room.givePlayerOneCard(room.Dealer.ID, true)
+				evt = room.blackjackForEvt(room.Dealer.ID, model.ROOM_EVENT_ON_CARD_GIVEN)
+			}
+
+			room.EventBroadcast <- model.RoomEventData{
+				Name: evt,
+				Data: model.Player{Name: room.Dealer.Name},
+			}
+
+			if room.Dealer.Total >= 17 || len(room.Cards) == 0 {
+				break
+			}
+
+		}
+
+		time.Sleep(2 * time.Second)
+		h.EndRound(room.Room.ID)
+
+		room.EventBroadcast <- model.RoomEventData{
+			Name: model.ROOM_EVENT_ON_GAME_END,
+		}
+
+		time.Sleep(10 * time.Second)
+		room.resetRoom()
+		room.EventBroadcast <- model.RoomEventData{
+			Name: model.ROOM_EVENT_ON_GAME_START,
+		}
+	}()
+}
+
 func (h *RouterHub) EndRound(id string) {
 
 	h.ConnectionMx.Lock()
@@ -178,6 +229,8 @@ func (h *RouterHub) EndRound(id string) {
 
 	for _, p := range r.RoomPlayers {
 
+		p.Status = model.PLAYER_STATUS_REWARDED
+
 		// dealer bust
 		// all player win
 		// except who is buts
@@ -185,7 +238,6 @@ func (h *RouterHub) EndRound(id string) {
 
 			if pAcc, okAcc := h.Players[p.ID]; okAcc {
 				pAcc.Money += p.Bet * 2
-				p.Status = model.PLAYER_STATUS_REWARDED
 			}
 
 		} else {
@@ -196,7 +248,6 @@ func (h *RouterHub) EndRound(id string) {
 
 				if pAcc, okAcc := h.Players[p.ID]; okAcc {
 					pAcc.Money += (p.Bet * 2) + (p.Bet / 2)
-					p.Status = model.PLAYER_STATUS_REWARDED
 				}
 
 				// if player is score is higher
@@ -205,7 +256,6 @@ func (h *RouterHub) EndRound(id string) {
 
 				if pAcc, okAcc := h.Players[p.ID]; okAcc {
 					pAcc.Money += (p.Bet * 2)
-					p.Status = model.PLAYER_STATUS_REWARDED
 				}
 
 				// lose bet
@@ -257,12 +307,27 @@ func (r *RoomsHub) removeFromTurnOrder(id string) {
 	r.ConnectionMx.Lock()
 	defer r.ConnectionMx.Unlock()
 
-	r.TurnsOrder = []string{}
+	odr := []string{}
 	for _, p := range r.Room.Players {
 		if p.ID != id {
-			r.TurnsOrder = append(r.TurnsOrder, p.ID)
+			odr = append(odr, p.ID)
 		}
 	}
+	r.Turn.TurnsOrder = odr
+}
+
+func (r *RoomsHub) nextTurnOrder() {
+	r.ConnectionMx.Lock()
+	defer r.ConnectionMx.Unlock()
+
+	r.Turn.TurnPost++
+	if r.Turn.TurnPost > len(r.Turn.TurnsOrder)-1 {
+		r.Turn.TurnPost = 0
+	}
+	if pTurn, ok := r.RoomPlayers[r.Turn.TurnsOrder[r.Turn.TurnPost]]; ok {
+		pTurn.Status = model.PLAYER_STATUS_AT_TURN
+	}
+
 }
 
 func (r *RoomsHub) resetRoom() {
@@ -275,10 +340,10 @@ func (r *RoomsHub) resetRoom() {
 		r.Cards[c.ID] = c.CopyPointer()
 	}
 
-	r.TurnPost = 0
-	r.TurnsOrder = []string{}
+	r.Turn.TurnPost = 0
+	r.Turn.TurnsOrder = []string{}
 	for _, p := range r.Room.Players {
-		r.TurnsOrder = append(r.TurnsOrder, p.ID)
+		r.Turn.TurnsOrder = append(r.Turn.TurnsOrder, p.ID)
 	}
 
 	r.Dealer.Status = model.PLAYER_STATUS_IDLE

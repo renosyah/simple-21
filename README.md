@@ -1,4 +1,4 @@
-# SImple 21
+# Simple 21
 
 Simple game 21 card
 

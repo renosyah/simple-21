@@ -25,8 +25,7 @@ type (
 		Room model.Room
 
 		// data in room
-		TurnPost       int
-		TurnsOrder     []string
+		Turn           *TurnHandler
 		Round          int
 		Status         int
 		Dealer         *model.RoomPlayer

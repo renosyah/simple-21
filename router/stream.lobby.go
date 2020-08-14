@@ -50,13 +50,13 @@ func (h *RouterHub) HandleStreamLobby(w http.ResponseWriter, r *http.Request) {
 		switch event.Name {
 		case model.LOBBY_EVENT_ON_JOIN:
 			/* this event is for client */
+		case model.LOBBY_EVENT_ON_LOGOUT:
+			/* this event is for client */
 		case model.LOBBY_EVENT_ON_DISCONNECTED:
 			/* this event is for client */
 		case model.LOBBY_EVENT_ON_ROOM_CREATED:
 			/* this event is for client */
 		case model.LOBBY_EVENT_ON_ROOM_REMOVE:
-			/* this event is for client */
-		case model.LOBBY_EVENT_ON_LOGOUT:
 			/* this event is for client */
 		default:
 		}

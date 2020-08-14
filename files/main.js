@@ -82,7 +82,8 @@ new Vue({
                 host_id:"",
                 name:"",
                 players:[],
-                card_groups : []
+                card_groups : [],
+                bot : 0
             },
             moneys : [],
             room_score : {
@@ -224,7 +225,9 @@ new Vue({
                     this.add_room = {
                         host_id:"",
                         name:"",
-                        players:[]
+                        players:[],
+                        card_groups : [],
+                        bot : 0
                     }
 
                     if (response.data.status != 200) {
@@ -362,7 +365,7 @@ new Vue({
                         this.getRooms()
                         break;
                         case LOBBY_EVENT_ON_ROOM_REMOVE:
-                        window.M.toast({outDuration : TOAST_OUT_DURRATION,html: '<b>' + event.data.name + ' is Removed!</b>', classes: 'white green-text'})
+                        window.M.toast({outDuration : TOAST_OUT_DURRATION,html: '<b>' + event.data.name + ' will be Removed!</b>', classes: 'white green-text'})
                         this.getRooms()
                         break;
                     default: break;

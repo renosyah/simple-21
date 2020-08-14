@@ -28,6 +28,7 @@ type (
 		Status    int    `json:"status"`
 		IsOnline  bool   `json:"is_online"`
 		TurnOrder int    `json:"-"`
+		IsBot     bool   `json:"-"`
 	}
 )
 

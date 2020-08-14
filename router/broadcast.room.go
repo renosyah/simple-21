@@ -12,27 +12,40 @@ import (
 	uuid "github.com/satori/go.uuid"
 )
 
-func (h *RouterHub) openRoom(pHostID, name string, player []model.Player, cgroups []string) {
+func (h *RouterHub) openRoom(add model.AddRoom) {
 	h.ConnectionMx.Lock()
 	defer h.ConnectionMx.Unlock()
 
-	roomPLayers := []model.RoomPlayer{}
-	for _, p := range player {
-		roomPLayers = append(roomPLayers, model.RoomPlayer{
+	roomPlayers := []model.RoomPlayer{}
+	for _, p := range add.Players {
+		roomPlayers = append(roomPlayers, model.RoomPlayer{
 			ID:       p.ID,
 			Name:     p.Name,
 			Status:   model.PLAYER_STATUS_INVITED,
 			Cards:    []model.Card{},
 			IsOnline: true,
+			IsBot:    false,
+		})
+	}
+
+	for i := 0; i < add.Bot; i++ {
+		roomPlayers = append(roomPlayers, model.RoomPlayer{
+			ID:       fmt.Sprint(uuid.NewV4()),
+			Name:     fmt.Sprintf("%s (Bot)", util.GenerateRandomName(true)),
+			Status:   model.PLAYER_STATUS_INVITED,
+			Cards:    []model.Card{},
+			Money:    500,
+			IsOnline: true,
+			IsBot:    true,
 		})
 	}
 
 	room := model.Room{
 		ID:          fmt.Sprint(uuid.NewV4()),
-		OwnerID:     pHostID,
-		Name:        name,
-		Players:     roomPLayers,
-		CardGroups:  cgroups,
+		OwnerID:     add.HostID,
+		Name:        add.Name,
+		Players:     roomPlayers,
+		CardGroups:  add.CardGroups,
 		CanDrawCard: true,
 	}
 	hub := h.createRoomHub(room)
@@ -96,8 +109,10 @@ func (h *RouterHub) createRoomHub(room model.Room) *RoomsHub {
 	r := &RoomsHub{
 		ConnectionMx: sync.RWMutex{},
 		Room:         room,
-		TurnPost:     0,
-		TurnsOrder:   []string{},
+		Turn: &TurnHandler{
+			TurnPost:   0,
+			TurnsOrder: []string{},
+		},
 		Dealer: &model.RoomPlayer{
 			ID:    fmt.Sprint(uuid.NewV4()),
 			Name:  util.GenerateRandomName(true),
@@ -111,10 +126,22 @@ func (h *RouterHub) createRoomHub(room model.Room) *RoomsHub {
 		RoomSubscriber: make(map[string]chan model.RoomEventData),
 		EventBroadcast: make(chan model.RoomEventData),
 	}
-
 	for i, p := range room.Players {
-		r.RoomPlayers[p.ID] = &model.RoomPlayer{ID: p.ID, Name: p.Name, Cards: []model.Card{}, TurnOrder: i}
-		r.TurnsOrder = append(r.TurnsOrder, p.ID)
+		player := &model.RoomPlayer{
+			ID:        p.ID,
+			Name:      p.Name,
+			Cards:     []model.Card{},
+			TurnOrder: i,
+			IsBot:     p.IsBot,
+		}
+
+		if p.IsBot {
+			r.runBotFunction(h, player)
+			player.Money = p.Money
+		}
+
+		r.RoomPlayers[player.ID] = player
+		r.Turn.TurnsOrder = append(r.Turn.TurnsOrder, p.ID)
 	}
 
 	for _, c := range cards {

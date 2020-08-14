@@ -29,7 +29,7 @@ func (h *RouterHub) HandleAddRoom(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	h.openRoom(param.HostID, param.Name, param.Players, param.CardGroups)
+	h.openRoom(param)
 
 	h.Lobbies.EventBroadcast <- model.EventData{
 		Name: model.LOBBY_EVENT_ON_ROOM_CREATED,
@@ -203,7 +203,6 @@ func (h *RouterHub) HandlePlaceBet(w http.ResponseWriter, r *http.Request) {
 		room.EventBroadcast <- model.RoomEventData{
 			Name: model.ROOM_EVENT_ON_GAME_START,
 		}
-
 	}
 
 	api.HttpResponse(w, r, true, http.StatusOK)
@@ -249,12 +248,12 @@ func (h *RouterHub) HandlePlayerActionTurnRoom(w http.ResponseWriter, r *http.Re
 		evt := room.blackjackForEvt(param.PlayerID, model.ROOM_EVENT_ON_CARD_GIVEN)
 
 		if evt == model.ROOM_EVENT_ON_PLAYER_BUST || evt == model.ROOM_EVENT_ON_PLAYER_BLACKJACK_WIN {
-			room.removeFromTurnOrder(param.PlayerID)
+			room.removeFromTurnOrder(player.ID)
 		}
 
 		room.EventBroadcast <- model.RoomEventData{
 			Name: evt,
-			Data: model.Player{Name: player.Name},
+			Data: model.Player{ID: player.ID, Name: player.Name},
 		}
 
 		break
@@ -276,58 +275,13 @@ func (h *RouterHub) HandlePlayerActionTurnRoom(w http.ResponseWriter, r *http.Re
 			Data: model.Player{Name: player.Name},
 		}
 
-		go func() {
-
-			for {
-
-				time.Sleep(2 * time.Second)
-
-				room.Dealer.ShowAllCard()
-				room.Dealer.SumUpTotal()
-
-				evt := model.ROOM_EVENT_ON_CARD_GIVEN
-
-				if room.Dealer.Total < 17 {
-					room.givePlayerOneCard(room.Dealer.ID, true)
-					evt = room.blackjackForEvt(room.Dealer.ID, model.ROOM_EVENT_ON_CARD_GIVEN)
-				}
-
-				room.EventBroadcast <- model.RoomEventData{
-					Name: evt,
-					Data: model.Player{Name: room.Dealer.Name},
-				}
-
-				if room.Dealer.Total >= 17 || len(room.Cards) == 0 {
-					break
-				}
-
-			}
-
-			time.Sleep(2 * time.Second)
-			h.EndRound(param.RoomID)
-
-			room.EventBroadcast <- model.RoomEventData{
-				Name: model.ROOM_EVENT_ON_GAME_END,
-			}
-
-			time.Sleep(10 * time.Second)
-			room.resetRoom()
-			room.EventBroadcast <- model.RoomEventData{
-				Name: model.ROOM_EVENT_ON_GAME_START,
-			}
-		}()
+		h.allPlayerTurnFinish(room)
 
 		api.HttpResponse(w, r, true, http.StatusOK)
 		return
 	}
 
-	room.TurnPost++
-	if room.TurnPost > len(room.TurnsOrder)-1 {
-		room.TurnPost = 0
-	}
-	if pTurn, ok := room.RoomPlayers[room.TurnsOrder[room.TurnPost]]; ok {
-		pTurn.Status = model.PLAYER_STATUS_AT_TURN
-	}
+	room.nextTurnOrder()
 
 	room.EventBroadcast <- model.RoomEventData{
 		Name: model.ROOM_EVENT_ON_PLAYER_END_TURN,
@@ -352,6 +306,10 @@ func (h *RouterHub) HandleRemoveRoom(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	room.ConnectionMx.Lock()
+	room.SessionExpired = time.Now().Local()
+	room.ConnectionMx.Unlock()
+
 	cRoom := model.Room{
 		ID:   room.Room.ID,
 		Name: room.Room.Name,
@@ -368,7 +326,7 @@ func (h *RouterHub) HandleRemoveRoom(w http.ResponseWriter, r *http.Request) {
 	}
 
 	room.EventBroadcast <- model.RoomEventData{
-		Status: model.ROOM_STATUS_NOT_USE,
+		Status: model.ROOM_STATUS_CLEAR_BOT,
 	}
 
 	h.Lobbies.EventBroadcast <- model.EventData{

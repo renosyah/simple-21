@@ -306,10 +306,6 @@ func (h *RouterHub) HandleRemoveRoom(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	room.ConnectionMx.Lock()
-	room.SessionExpired = time.Now().Local()
-	room.ConnectionMx.Unlock()
-
 	cRoom := model.Room{
 		ID:   room.Room.ID,
 		Name: room.Room.Name,
@@ -325,14 +321,13 @@ func (h *RouterHub) HandleRemoveRoom(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	room.ConnectionMx.Lock()
+	room.SessionExpired = time.Now().Local()
+	room.ConnectionMx.Unlock()
+
 	room.EventBroadcast <- model.RoomEventData{
 		Status: model.ROOM_STATUS_CLEAR_BOT,
 	}
 
-	h.Lobbies.EventBroadcast <- model.EventData{
-		Name: model.LOBBY_EVENT_ON_ROOM_REMOVE,
-		Data: cRoom,
-	}
-
-	api.HttpResponse(w, r, model.Player{}, http.StatusOK)
+	api.HttpResponse(w, r, cRoom, http.StatusOK)
 }

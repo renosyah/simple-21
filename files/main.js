@@ -311,6 +311,7 @@ new Vue({
                         window.M.toast({outDuration : TOAST_OUT_DURRATION,html: '<b>Failed Delete Room!</b>', classes: 'white green-text'})
                         return
                     }
+                    window.M.toast({outDuration : TOAST_OUT_DURRATION,html: '<b>Room Will be deleted!</b>', classes: 'white green-text'})  
                 })
                 .catch(e => {
                     this.is_loading = false
@@ -365,7 +366,7 @@ new Vue({
                         this.getRooms()
                         break;
                         case LOBBY_EVENT_ON_ROOM_REMOVE:
-                        window.M.toast({outDuration : TOAST_OUT_DURRATION,html: '<b>' + event.data.name + ' will be Removed!</b>', classes: 'white green-text'})
+                        window.M.toast({outDuration : TOAST_OUT_DURRATION,html: '<b>' + event.data.name + ' hass been Removed!</b>', classes: 'white green-text'})
                         this.getRooms()
                         break;
                     default: break;

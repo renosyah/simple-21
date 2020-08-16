@@ -285,7 +285,7 @@ func (r *RoomsHub) isMineHighThanOther(p *model.RoomPlayer) bool {
 	}
 
 	for _, rp := range r.RoomPlayers {
-		if rp.ID != p.ID && p.Total < rp.Total {
+		if rp.ID != p.ID && p.Total < rp.Total && rp.Status != model.PLAYER_STATUS_BUST {
 			isHigher = false
 			break
 		}

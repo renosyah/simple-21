@@ -240,8 +240,6 @@ func (h *RouterHub) HandlePlayerActionTurnRoom(w http.ResponseWriter, r *http.Re
 		return
 	}
 
-	isRemoved := false
-
 	switch param.Choosed {
 	case model.ROOM_TURN_CHOOSE_HIT:
 
@@ -251,7 +249,7 @@ func (h *RouterHub) HandlePlayerActionTurnRoom(w http.ResponseWriter, r *http.Re
 
 		if evt == model.ROOM_EVENT_ON_PLAYER_BUST || evt == model.ROOM_EVENT_ON_PLAYER_BLACKJACK_WIN {
 			room.removeFromTurnOrder(player.ID)
-			isRemoved = true
+			room.Turn.TurnPost--
 		}
 
 		room.EventBroadcast <- model.RoomEventData{
@@ -264,7 +262,7 @@ func (h *RouterHub) HandlePlayerActionTurnRoom(w http.ResponseWriter, r *http.Re
 
 		player.Status = model.PLAYER_STATUS_FINISH_TURN
 		room.removeFromTurnOrder(param.PlayerID)
-		isRemoved = true
+		room.Turn.TurnPost--
 
 		break
 	default:
@@ -285,9 +283,7 @@ func (h *RouterHub) HandlePlayerActionTurnRoom(w http.ResponseWriter, r *http.Re
 		return
 	}
 
-	if !isRemoved {
-		room.nextTurnOrder()
-	}
+	room.nextTurnOrder()
 
 	room.EventBroadcast <- model.RoomEventData{
 		Name: model.ROOM_EVENT_ON_PLAYER_END_TURN,

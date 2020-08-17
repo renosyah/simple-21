@@ -308,9 +308,9 @@ func (r *RoomsHub) removeFromTurnOrder(id string) {
 	defer r.ConnectionMx.Unlock()
 
 	odr := []string{}
-	for _, p := range r.Room.Players {
-		if p.ID != id {
-			odr = append(odr, p.ID)
+	for _, pID := range r.Turn.TurnsOrder {
+		if pID != id {
+			odr = append(odr, pID)
 		}
 	}
 	r.Turn.TurnsOrder = odr

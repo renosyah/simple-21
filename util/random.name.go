@@ -2,7 +2,6 @@ package util
 
 import (
 	"math/rand"
-	"time"
 	"unicode"
 )
 
@@ -35,7 +34,6 @@ func lowercaseFirstLetter(word string) string {
 }
 
 func GenerateRandomName(t bool) string {
-	rand.Seed(time.Now().UTC().UnixNano())
 	title := uppercaseFirstLetter(randomTitle())
 	noun1 := uppercaseFirstLetter(randomNoun())
 	adjective := lowercaseFirstLetter(randomAdjective())

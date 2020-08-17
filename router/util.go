@@ -320,6 +320,10 @@ func (r *RoomsHub) nextTurnOrder() {
 	r.ConnectionMx.Lock()
 	defer r.ConnectionMx.Unlock()
 
+	if len(r.Turn.TurnsOrder) == 0 {
+		return
+	}
+
 	r.Turn.TurnPost++
 	if r.Turn.TurnPost > len(r.Turn.TurnsOrder)-1 {
 		r.Turn.TurnPost = 0

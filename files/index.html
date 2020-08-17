@@ -107,7 +107,16 @@
                             </label>
                             &nbsp;&nbsp;
                         </a>
-                        <br /><br />
+                        <br /> 
+                    </div>
+                    <div class="card-panel white">
+                        <h6 class="green-text">
+                            <span v-show="langCheck('ind')">Komputer ({{ add_room.bot }})</span>
+                            <span v-show="langCheck('en')">Bot ({{ add_room.bot }})</span>
+                        </h6>
+                        <p class="range-field">
+                            <input class="range-green" type="range" min="0" max="4" v-model.number="add_room.bot" />
+                        </p>
                     </div>
                     <div class="card-panel white">
                         <h6 class="green-text">

@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"log"
+	"math/rand"
 	"net/http"
 	"os"
 	"os/signal"
@@ -31,6 +32,7 @@ var rootCmd = &cobra.Command{
 	},
 	Run: func(cmd *cobra.Command, args []string) {
 
+		rand.Seed(time.Now().UTC().UnixNano())
 		r := mux.NewRouter()
 
 		r.HandleFunc("/addplayer", routerHub.HandleAddPlayer)

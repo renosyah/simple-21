@@ -318,17 +318,12 @@ func (h *RouterHub) HandleRemoveRoom(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if len(room.RoomSubscriber) > 0 {
-		api.HttpResponseException(w, r, http.StatusForbidden)
-		return
-	}
-
 	room.ConnectionMx.Lock()
 	room.SessionExpired = time.Now().Local()
 	room.ConnectionMx.Unlock()
 
 	room.EventBroadcast <- model.RoomEventData{
-		Status: model.ROOM_STATUS_CLEAR_BOT,
+		Name: model.ROOM_EVENT_ON_BOT_REMOVE,
 	}
 
 	api.HttpResponse(w, r, cRoom, http.StatusOK)

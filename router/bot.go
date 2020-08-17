@@ -16,13 +16,9 @@ func (r *RoomsHub) botSubBroadcastsEvent(hub *RouterHub, bot *model.RoomPlayer) 
 		select {
 		case msg := <-subReceiver:
 
-			switch msg.Status {
-			case model.ROOM_STATUS_CLEAR_BOT:
-				return
-			default:
-			}
-
 			switch msg.Name {
+			case model.ROOM_EVENT_ON_BOT_REMOVE:
+				return
 			case model.ROOM_EVENT_ON_JOIN:
 				/* this event is for client */
 			case model.ROOM_EVENT_ON_PLAYER_SET_BET:

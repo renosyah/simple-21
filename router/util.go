@@ -233,8 +233,6 @@ func (h *RouterHub) EndRound(id string) {
 
 	for _, p := range r.RoomPlayers {
 
-		p.Status = model.PLAYER_STATUS_REWARDED
-
 		// dealer bust
 		// all player win
 		// except who is buts
@@ -243,6 +241,7 @@ func (h *RouterHub) EndRound(id string) {
 			if pAcc, okAcc := h.Players[p.ID]; okAcc {
 				pAcc.Money += p.Bet * 2
 			}
+			p.Status = model.PLAYER_STATUS_REWARDED
 
 		} else {
 
@@ -253,14 +252,16 @@ func (h *RouterHub) EndRound(id string) {
 				if pAcc, okAcc := h.Players[p.ID]; okAcc {
 					pAcc.Money += (p.Bet * 2) + (p.Bet / 2)
 				}
+				p.Status = model.PLAYER_STATUS_REWARDED
 
 				// if player is score is higher
 				// win
-			} else if r.isMineHighThanOther(p) {
+			} else if p.Total < 21 && r.isMineHighThanOther(p) {
 
 				if pAcc, okAcc := h.Players[p.ID]; okAcc {
 					pAcc.Money += (p.Bet * 2)
 				}
+				p.Status = model.PLAYER_STATUS_REWARDED
 
 				// lose bet
 			} else {
@@ -278,24 +279,20 @@ func (h *RouterHub) EndRound(id string) {
 }
 
 func (r *RoomsHub) isMineHighThanOther(p *model.RoomPlayer) bool {
-	isHigher := true
-
 	if p.Total > 21 {
 		return false
 	}
-
 	if p.Total <= r.Dealer.Total {
 		return false
 	}
-
 	for _, rp := range r.RoomPlayers {
-		if rp.ID != p.ID && p.Total < rp.Total && rp.Status != model.PLAYER_STATUS_BUST && rp.Status != model.PLAYER_STATUS_REWARDED {
-			isHigher = false
-			break
+		if rp.Status != model.PLAYER_STATUS_LOSE &&
+			rp.Status != model.PLAYER_STATUS_BUST &&
+			rp.ID != p.ID && rp.Total > p.Total {
+			return false
 		}
 	}
-
-	return isHigher
+	return true
 }
 
 func (r *RoomsHub) isPlayersStatusSame(status int) bool {

@@ -551,7 +551,11 @@
                                         <span class="title">
                                             {{ room.dealer.name }}
                                         </span>
-                                        <p>Total : {{ room.dealer.total_show }} <br /><br /> </p>  
+                                        <p>Total : <span :class="{'red-text': room.dealer.total_show > 21 }">{{ room.dealer.total_show }}/21</span> <br /><br /> </p>  
+                                        <p v-show="room.dealer.cards.length == 0">
+                                            <span v-show="langCheck('ind')">- Tidak Ada Kartu -</span>
+                                            <span v-show="langCheck('en')">- No Cards -</span>
+                                        </p> 
                                         <div class="row">  
                                             <div v-for="(c,ic) in room.dealer.cards" v-bind:key="ic">
                                                 <div v-if="c.show">
@@ -603,7 +607,7 @@
                                         <p> 
                                             <span v-show="langCheck('ind')">Taruhan : </span>
                                             <span v-show="langCheck('en')">Bet : </span>
-                                            $ {{ r.bet }} &nbsp;&nbsp; Total : {{ r.total_show }}<br /><br /> </p>
+                                            $ {{ r.bet }} &nbsp;&nbsp; Total : <span :class="{'red-text': r.total_show > 21 }">{{ r.total_show }}/21</span><br /><br /> </p>
                                         <p v-show="r.cards.length == 0">
                                             <span v-show="langCheck('ind')">- Tidak Ada Kartu -</span>
                                             <span v-show="langCheck('en')">- No Cards -</span>
@@ -750,10 +754,6 @@
                         <span v-show="langCheck('ind')">Skor</span>
                         <span v-show="langCheck('en')">Score</span>
                     </a>
-                    <a style="cursor: pointer;" class="modal-close waves-effect waves-green btn-flat">
-                        <span v-show="langCheck('ind')">Tutup</span>
-                        <span v-show="langCheck('en')">Close</span>
-                    </a>  
                 </div>
             </div>
 
@@ -803,10 +803,6 @@
                     <a style="cursor: pointer;" @click="newPage('score-page')" class="waves-effect waves-green btn-flat">
                         <span v-show="langCheck('ind')">Skor</span>
                         <span v-show="langCheck('en')">Score</span>
-                    </a>
-                    <a style="cursor: pointer;" class="modal-close waves-effect waves-green btn-flat">
-                        <span v-show="langCheck('ind')">Tutup</span>
-                        <span v-show="langCheck('en')">Close</span>
                     </a>  
                 </div>
             </div>

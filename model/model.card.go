@@ -4,8 +4,12 @@ import (
 	"fmt"
 )
 
-var CARD_GROUPS = []string{"Spade", "Diamond", "Heart", "Club"}
-var CARD_GROUPS_URL = []string{"./img/Spade.png", "./img/Diamond.png", "./img/Heart.png", "./img/Club.png"}
+var CARD_GROUPS = map[string]string{
+	"Spade":   "./img/Spade.png",
+	"Diamond": "./img/Diamond.png",
+	"Heart":   "./img/Heart.png",
+	"Club":    "./img/Club.png",
+}
 
 type (
 	Card struct {
@@ -44,10 +48,12 @@ func NewCards(cgroups []string) []Card {
 
 	groups := cgroups
 	if len(cgroups) == 0 {
-		groups = CARD_GROUPS
+		for k, _ := range CARD_GROUPS {
+			groups = append(groups, k)
+		}
 	}
 
-	for pos, g := range groups {
+	for _, g := range groups {
 		for i := 1; i <= 13; i++ {
 			value := i
 
@@ -61,7 +67,7 @@ func NewCards(cgroups []string) []Card {
 				Label: GetLabel(fmt.Sprint(i)),
 				Value: value,
 				Group: g,
-				Image: CARD_GROUPS_URL[pos],
+				Image: CARD_GROUPS[g],
 				Show:  false,
 			})
 		}

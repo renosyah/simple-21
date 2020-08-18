@@ -23,6 +23,7 @@ func (h *RouterHub) openRoom(add model.AddRoom) {
 			Name:     p.Name,
 			Status:   model.PLAYER_STATUS_INVITED,
 			Cards:    []model.Card{},
+			Money:    0,
 			IsOnline: true,
 			IsBot:    false,
 		})
@@ -34,7 +35,7 @@ func (h *RouterHub) openRoom(add model.AddRoom) {
 			Name:     fmt.Sprintf("%s (Bot)", util.GenerateRandomName(true)),
 			Status:   model.PLAYER_STATUS_INVITED,
 			Cards:    []model.Card{},
-			Money:    500,
+			Money:    0,
 			IsOnline: true,
 			IsBot:    true,
 		})
@@ -132,12 +133,12 @@ func (h *RouterHub) createRoomHub(room model.Room) *RoomsHub {
 			Name:      p.Name,
 			Cards:     []model.Card{},
 			TurnOrder: i,
+			Money:     p.Money,
 			IsBot:     p.IsBot,
 		}
 
 		if p.IsBot {
 			r.runBotFunction(h, player)
-			player.Money = p.Money
 		}
 
 		r.RoomPlayers[player.ID] = player

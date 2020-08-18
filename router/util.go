@@ -27,7 +27,11 @@ func HandleGetRandomName(w http.ResponseWriter, r *http.Request) {
 }
 
 func HandleGetCardsGroup(w http.ResponseWriter, r *http.Request) {
-	api.HttpResponse(w, r, model.CARD_GROUPS, http.StatusOK)
+	var groups []string
+	for k, _ := range model.CARD_GROUPS {
+		groups = append(groups, k)
+	}
+	api.HttpResponse(w, r, groups, http.StatusOK)
 }
 
 func (h *RouterHub) dropOffPlayer() {
@@ -285,7 +289,7 @@ func (r *RoomsHub) isMineHighThanOther(p *model.RoomPlayer) bool {
 	}
 
 	for _, rp := range r.RoomPlayers {
-		if rp.ID != p.ID && p.Total < rp.Total && rp.Status != model.PLAYER_STATUS_BUST {
+		if rp.ID != p.ID && p.Total < rp.Total && rp.Status != model.PLAYER_STATUS_BUST && rp.Status != model.PLAYER_STATUS_REWARDED {
 			isHigher = false
 			break
 		}

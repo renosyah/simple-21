@@ -76,12 +76,13 @@ func (r *RoomsHub) botSubBroadcastsEvent(hub *RouterHub, bot *model.RoomPlayer) 
 
 			case model.ROOM_EVENT_ON_JOIN:
 				if bot.Status == model.PLAYER_STATUS_INVITED || bot.Status == model.PLAYER_STATUS_IDLE {
-					bet := rand.Intn(500-50) + 50
 
 					r.ConnectionMx.Lock()
 					if bot.Money < 50 {
 						bot.Money += 500
 					}
+					bet := rand.Intn(bot.Money-50) + 50
+
 					bot.Money = (bot.Money - bet)
 					bot.Bet = bet
 					bot.Status = model.PLAYER_STATUS_SET_BET
@@ -93,12 +94,13 @@ func (r *RoomsHub) botSubBroadcastsEvent(hub *RouterHub, bot *model.RoomPlayer) 
 			case model.ROOM_EVENT_ON_GAME_START:
 
 				if bot.Status == model.PLAYER_STATUS_INVITED || bot.Status == model.PLAYER_STATUS_IDLE {
-					bet := rand.Intn(500-50) + 50
 
 					r.ConnectionMx.Lock()
 					if bot.Money < 50 {
 						bot.Money += 500
 					}
+					bet := rand.Intn(bot.Money-50) + 50
+
 					bot.Money = (bot.Money - bet)
 					bot.Bet = bet
 					bot.Status = model.PLAYER_STATUS_SET_BET

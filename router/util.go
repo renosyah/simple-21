@@ -34,6 +34,24 @@ func HandleGetCardsGroup(w http.ResponseWriter, r *http.Request) {
 	api.HttpResponse(w, r, groups, http.StatusOK)
 }
 
+func (h *RouterHub) createPlayerSessionTime() time.Time {
+	timeSet := time.Now().Local()
+	timeExp := timeSet.Add(time.Hour*time.Duration(0) +
+		time.Minute*time.Duration(h.Config.PlayerSessionTime) +
+		time.Second*time.Duration(0))
+
+	return timeExp
+}
+
+func (h *RouterHub) createRoomSessionTime() time.Time {
+	timeSet := time.Now().Local()
+	timeExp := timeSet.Add(time.Hour*time.Duration(0) +
+		time.Minute*time.Duration(h.Config.RoomSessionTime) +
+		time.Second*time.Duration(0))
+
+	return timeExp
+}
+
 func (h *RouterHub) dropOffPlayer() {
 	for {
 		h.ConnectionMx.Lock()

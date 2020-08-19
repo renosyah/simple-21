@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"net/http"
 	"sort"
-	"time"
 
 	"github.com/renosyah/simple-21/api"
 	"github.com/renosyah/simple-21/model"
@@ -31,13 +30,7 @@ func (h *RouterHub) HandleAddPlayer(w http.ResponseWriter, r *http.Request) {
 	param.ID = fmt.Sprint(uuid.NewV4())
 	param.Money = h.Config.StarterMoney
 	param.IsOnline = true
-
-	timeSet := time.Now().Local()
-	timeExp := timeSet.Add(time.Hour*time.Duration(0) +
-		time.Minute*time.Duration(h.Config.PlayerSessionTime) +
-		time.Second*time.Duration(0))
-
-	param.SessionExpired = timeExp
+	param.SessionExpired = h.createPlayerSessionTime()
 
 	h.Players[param.ID] = &param
 

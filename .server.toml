@@ -11,5 +11,5 @@ idle_timeout = 15
 player = 10
 room = 5
 money = 0
-player_session = 15
+player_session = 5
 room_session = 10

@@ -4,7 +4,6 @@ import (
 	"context"
 	"fmt"
 	"sync"
-	"time"
 
 	"github.com/gorilla/websocket"
 	"github.com/renosyah/simple-21/model"
@@ -102,11 +101,6 @@ func (h *RouterHub) createRoomHub(room model.Room) *RoomsHub {
 
 	cards := model.NewCards(room.CardGroups)
 
-	timeSet := time.Now().Local()
-	timeExp := timeSet.Add(time.Hour*time.Duration(0) +
-		time.Minute*time.Duration(h.Config.RoomSessionTime) +
-		time.Second*time.Duration(0))
-
 	r := &RoomsHub{
 		ConnectionMx: sync.RWMutex{},
 		Room:         room,
@@ -123,7 +117,7 @@ func (h *RouterHub) createRoomHub(room model.Room) *RoomsHub {
 		RoomPlayers:    make(map[string]*model.RoomPlayer),
 		Cards:          make(map[string]*model.Card),
 		Scores:         make(map[int]*model.Score),
-		SessionExpired: timeExp,
+		SessionExpired: h.createRoomSessionTime(),
 		RoomSubscriber: make(map[string]chan model.RoomEventData),
 		EventBroadcast: make(chan model.RoomEventData),
 	}

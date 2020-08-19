@@ -40,8 +40,10 @@ func (h *RouterHub) dropOffPlayer() {
 		for k, p := range h.Players {
 			_, ok := h.Lobbies.Subscriber[k]
 			if !ok && !p.IsOnline && time.Now().Local().After(p.SessionExpired) {
-				delete(h.Players, p.ID)
-				h.Lobbies.EventBroadcast <- model.EventData{Name: model.LOBBY_EVENT_ON_LOGOUT}
+				if h.ownersRoomsHasRemoved(h.getAllOwnersRooms(p.ID)) {
+					delete(h.Players, p.ID)
+					h.Lobbies.EventBroadcast <- model.EventData{Name: model.LOBBY_EVENT_ON_LOGOUT}
+				}
 				break
 			}
 		}
@@ -64,6 +66,34 @@ func (h *RouterHub) dropEmptyRoom() {
 		}
 		time.Sleep(5 * time.Second)
 	}
+}
+
+func (h *RouterHub) getAllOwnersRooms(id string) []string {
+	rooms := []string{}
+	for idR, r := range h.Rooms {
+		if r.Room.OwnerID == id {
+			rooms = append(rooms, idR)
+		}
+	}
+	return rooms
+}
+
+func (h *RouterHub) ownersRoomsHasRemoved(rooms []string) bool {
+	for _, id := range rooms {
+		if r, ok := h.Rooms[id]; ok {
+
+			r.ConnectionMx.Lock()
+			r.SessionExpired = time.Now().Local()
+			r.ConnectionMx.Unlock()
+
+			r.EventBroadcast <- model.RoomEventData{
+				Name: model.ROOM_EVENT_ON_PLAYER_REMOVE,
+			}
+
+		}
+	}
+
+	return true
 }
 
 func (room *RoomsHub) startGame() {

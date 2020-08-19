@@ -22,6 +22,7 @@ func (h *RouterHub) setPlayerOnlineStatus(player model.Player, isOnline, broadca
 	if !ok {
 		return
 	}
+
 	p.IsOnline = isOnline
 	if !isOnline {
 		p.SessionExpired = h.createPlayerSessionTime()

@@ -15,6 +15,7 @@ const ROOM_EVENT_ON_PLAYER_BLACKJACK_WIN = "ROOM_EVENT_ON_PLAYER_BLACKJACK_WIN"
 const ROOM_EVENT_ON_PLAYER_BUST = "ROOM_EVENT_ON_PLAYER_BUST"
 const ROOM_EVENT_ON_GAME_START   = "ROOM_EVENT_ON_GAME_START"
 const ROOM_EVENT_ON_CARD_GIVEN   = "ROOM_EVENT_ON_CARD_GIVEN"
+const ROOM_EVENT_ON_PLAYER_REMOVE = "ROOM_EVENT_ON_PLAYER_REMOVE"
 
 // FOR ROOM STATUS
 const ROOM_STATUS_USE     = 0
@@ -437,6 +438,10 @@ new Vue({
                         //window.M.toast({outDuration : TOAST_OUT_DURRATION,html: '<b>' + event.data.name + ' has Exit room!</b>', classes: 'white green-text'})
                         this.getRoom(idRoom)
                         break;
+                    case ROOM_EVENT_ON_PLAYER_REMOVE:
+                        window.M.toast({outDuration : TOAST_OUT_DURRATION,html: '<b>this room is closed!</b>', classes: 'white green-text'})
+                        this.room_ws.close()
+                        break;
                     default: break;
                 }
             }
@@ -445,7 +450,7 @@ new Vue({
                 this.getRoom(idRoom)
             }
             this.room_ws.onclose = () => {
-                    
+                    this.switchPage('main-page')
             }
             this.room_ws.onerror = (e) => {
                 console.log(e)

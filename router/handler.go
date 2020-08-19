@@ -93,8 +93,13 @@ func NewRouterHub(cfg model.GameConfig) *RouterHub {
 		h.ListMoneyShops[m.ID] = m
 	}
 
-	go h.dropOffPlayer()
-	go h.dropEmptyRoom()
+	if h.Config.PlayerSessionTime > 0 {
+		go h.dropOffPlayer()
+	}
+
+	if h.Config.RoomSessionTime > 0 {
+		go h.dropEmptyRoom()
+	}
 
 	return h
 }

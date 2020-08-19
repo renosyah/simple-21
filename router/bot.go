@@ -70,7 +70,7 @@ func (r *RoomsHub) botSubBroadcastsEvent(hub *RouterHub, bot *model.RoomPlayer) 
 		case msg := <-subReceiver:
 
 			switch msg.Name {
-			case model.ROOM_EVENT_ON_BOT_REMOVE:
+			case model.ROOM_EVENT_ON_PLAYER_REMOVE:
 				bot.Status = model.PLAYER_STATUS_OUT
 				return
 

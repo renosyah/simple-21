@@ -171,10 +171,6 @@ func (h *RouterHub) HandlePlaceBet(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	h.ConnectionMx.Lock()
-	p.Money -= param.Bet
-	h.ConnectionMx.Unlock()
-
 	room, ok := h.Rooms[param.RoomID]
 	if !ok {
 		api.HttpResponseException(w, r, http.StatusNotFound)
@@ -186,6 +182,10 @@ func (h *RouterHub) HandlePlaceBet(w http.ResponseWriter, r *http.Request) {
 		api.HttpResponseException(w, r, http.StatusNotFound)
 		return
 	}
+
+	h.ConnectionMx.Lock()
+	p.Money -= param.Bet
+	h.ConnectionMx.Unlock()
 
 	room.ConnectionMx.Lock()
 	player.Bet = param.Bet
@@ -319,12 +319,22 @@ func (h *RouterHub) HandleRemoveRoom(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	room.ConnectionMx.Lock()
-	room.SessionExpired = time.Now().Local()
-	room.ConnectionMx.Unlock()
+	if len(room.RoomSubscriber) > 0 {
+
+		room.ConnectionMx.Lock()
+		room.SessionExpired = time.Now().Local()
+		room.ConnectionMx.Unlock()
+
+		room.EventBroadcast <- model.RoomEventData{
+			Name: model.ROOM_EVENT_ON_PLAYER_REMOVE,
+		}
+
+		api.HttpResponse(w, r, cRoom, http.StatusOK)
+		return
+	}
 
 	room.EventBroadcast <- model.RoomEventData{
-		Name: model.ROOM_EVENT_ON_BOT_REMOVE,
+		Status: model.ROOM_STATUS_NOT_USE,
 	}
 
 	api.HttpResponse(w, r, cRoom, http.StatusOK)
